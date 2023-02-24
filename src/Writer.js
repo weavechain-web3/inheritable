@@ -114,7 +114,89 @@ class Writer extends Component {
     }
 
     async write() {
-        
+        const {
+            claim_1, qty_1,
+            claim_2, qty_2,
+            claim_3, qty_3,
+            claim_4, qty_4
+        } = this.state;
+
+        //1. login. The login could be done only once if the nodeApi and session variables are kept in the component state
+        const { nodeApi, session } = await this.login();
+
+        const layout = {
+            "columns": {
+                "id": {"type": "LONG", "isIndexed": true, "isUnique": true, "isNullable": false},
+                "ts": {"type": "LONG"},
+                "pubkey": {"type": "STRING"},
+                "sig": {"type": "STRING"},
+                "claim": {"type": "STRING"},
+                "amount": {"type": "DOUBLE"}
+            },
+            "idColumnIndex": 0,  // Autogenerates IDs
+            "timestampColumnIndex": 1, // Fills the column automatically with the network time
+            "ownerColumnIndex": 2, // Fills the pubkey column automatically with the public key of the writer
+            "signatureColumnIndex": 3, // Fills the column with an EdDSA signature of the record hash
+            "isLocal": true,
+            "applyReadTransformations": true
+        };
+
+        const resDrop = await nodeApi.dropTable(session, data_collection, table, WeaveHelper.Options.DROP_FAILSAFE);
+        //console.log(resDrop)
+        const resCreate = await nodeApi.createTable(session, data_collection, table, new WeaveHelper.Options.CreateOptions(false, false, layout));
+        //console.log(resCreate)
+
+        //2. write.
+        const items = [
+            [
+                null, //_id, filled server side
+                null, // timestamp
+                null, // writer
+                null, // signature of writer
+                claim_1,
+                qty_1
+            ],
+            [
+                null,
+                null,
+                null,
+                null,
+                claim_2,
+                qty_2
+            ],
+            [
+                null,
+                null,
+                null,
+                null,
+                claim_3,
+                qty_3
+            ],
+            [
+                null,
+                null,
+                null,
+                null,
+                claim_4,
+                qty_4
+            ]
+        ];
+        const records = new WeaveHelper.Records(table, items);
+        const resWrite = await nodeApi.write(session, data_collection, records, WeaveHelper.Options.WRITE_DEFAULT)
+        //console.log(resWrite)
+
+        //3. check merkle tree
+        const resMerkle = await nodeApi.merkleTree(session, data_collection, table
+            , new WeaveHelper.Filter(null, null, null, null, [ "claim", "amount" ])
+            , "salt1234"
+            , "Keccak-512"
+            , WeaveHelper.Options.READ_DEFAULT_NO_CHAIN
+        );
+        console.log(resMerkle);
+
+        this.setState({ rootHash: resMerkle?.data?.rootHash });
+
+        return resMerkle;
     }
 
     render() {

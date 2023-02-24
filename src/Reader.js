@@ -130,7 +130,129 @@ class Reader extends Component {
     }
 
     async check() {
-        // TODO
+        const {
+            claim,
+            qty,
+            salt
+        } = this.state;
+
+        //1. login. The login could be done only once if the nodeApi and session variables are kept in the component state
+        const { nodeApi, session } = await this.login();
+
+        //2. read merkle tree from source
+        const resMerkle = await nodeApi.merkleTree(session, data_collection, table,
+            new WeaveHelper.Filter(null, null, null, null, [ "claim", "amount" ]),
+            salt,
+            digest,
+            WeaveHelper.Options.READ_DEFAULT_NO_CHAIN
+        );
+        console.log(resMerkle)
+
+        this.setState({
+            success: false,
+            message: null,
+            error: null
+        });
+
+
+        let message = null;
+        let success = !!resMerkle?.data;
+        if (!success) {
+            this.setState({
+                error: "No merkle tree received"
+            });
+        }
+
+        try {
+            if (success) {
+                message = "Merkle tree received from node\n"
+
+                const rootHash = resMerkle.data.rootHash;
+                const ts = resMerkle.data.timestamp;
+                const signature = resMerkle.data.signature;
+                const tree = resMerkle.data.tree;
+
+                //3. get merkle root from solana contract
+                let connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("testnet"), "confirmed");
+                const programAccount = new solanaWeb3.PublicKey(storageAccount);
+                const accountInfo = await connection.getAccountInfo(programAccount, "confirmed");
+                const data = accountInfo.data;
+                //console.log(data)
+
+                //4. check merkle root on chain matches merkle root received from node
+                const hlenarr = data.slice(0, 4); //int little endian
+                const hlen = hlenarr[0] + (hlenarr[1] << 8) + (hlenarr[2] << 16) + (hlenarr[3] << 24);
+                const chainRootHash = new TextDecoder().decode(data.slice(4, 4 + hlen));
+                //console.log(chainRootHash)
+                const mlenarr = data.slice(4 + hlen, 8 + hlen); //int little endian
+                const mlen = mlenarr[0] + (mlenarr[1] << 8) + (mlenarr[2] << 16) + (mlenarr[3] << 24);
+                const mdata = new TextDecoder().decode(data.slice(8 + hlen, data.length));
+                //console.log(mdata);
+                const metadata = JSON.parse(mdata);
+                const chainTs = metadata.ts;
+                const chainRootHashSignature = metadata.signature;
+
+                success = chainRootHash == rootHash;
+                if (!success) {
+                    this.setState({
+                        error: "Root hash not matching on-chain value"
+                    });
+                } else {
+                    message += "Merkle root hash matching on-chain root hash\n"
+
+                    //5. verify the signature we have on chain
+                    const resKey = await nodeApi.sigKey();
+                    const sigKey = resKey.data;
+
+                    const toSign = chainRootHash + " " + chainTs;
+                    //const toSign = rootHash + " " + ts;
+                    const resVerifySig = await nodeApi.verifyDataSignature(session, sigKey, chainRootHashSignature, toSign);
+                    //console.log(resVerifySig)
+                    success = resVerifySig.data === "true";
+                    if (!success) {
+                        this.setState({
+                            error: "Invalid root hash signature"
+                        });
+                    }
+
+                    if (success) {
+                        message += "On-chain merkle root hash matching Dilithium signature\n"
+
+                        //6. check the claim is part of the merkle tree received from the node
+                        //const serialization = StringifyWithFloats({ qty: "float" }, 1)({ claim, qty });
+                        const serialization = "[\"" + claim + "\"," + ((qty + "").endsWith(".0") ? qty : (qty + ".0")) + "]"; //
+                        console.log(serialization);
+                        const checksum = keccak512(salt + serialization);
+                        const recordHash = binary_to_base58(Buffer.from(checksum, "hex"));
+                        //console.log(recordHash)
+                        const resVerifyTree = await nodeApi.verifyMerkleHash(session, tree, recordHash, digest);
+                        console.log(resVerifyTree);
+
+                        success = resVerifyTree.data === "true";
+                        console.log(success)
+                        if (!success) {
+                            this.setState({
+                                error: "Claim not present"
+                            });
+                        } else {
+                            message += "Claim hash found\n" + "Validated the Merkle Tree\n"
+
+                            this.setState({
+                                message: message
+                            });
+                        }
+                    }
+                }
+            }
+        } catch(error) {
+            this.setState({
+                error: "Failed checking signature"
+            });
+        }
+
+        this.setState({
+            success: success
+        })
     }
 
     render() {
