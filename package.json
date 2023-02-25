@@ -3,13 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@solana/web3.js": "^1.73.2",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@uiw/react-textarea-code-editor": "^2.0.6",
+    "base58-js": "^1.0.4",
+    "buffer": "^6.0.3",
+    "crypto-js": "^4.1.1",
+    "elliptic": "^6.5.4",
+    "java-random": "^0.4.0",
+    "js-sha3": "^0.8.0",
+    "jsrsasign": "^10.5.27",
+    "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "recharts": "^2.1.15",
+    "stream": "^0.0.2",
+    "stringify-with-floats": "^2.0.1",
+    "web-vitals": "^2.1.4",
+    "web3": "^1.8.1"
   },
   "scripts": {
     "start": "react-scripts start",
