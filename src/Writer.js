@@ -2,6 +2,7 @@ import React, { Component, useEffect } from 'react';
 import './App.css';
 import Web3 from 'web3'
 import WeaveHelper from "./weaveapi/helper";
+import CodeEditor from "@uiw/react-textarea-code-editor";
 
 const sideChain = "https://public.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
 
@@ -43,6 +44,14 @@ class Writer extends Component {
             credentials: null,
             saved: false,
             wallet: null,
+            claim_1: "John Doe, son, with last 4 SSN digits 1234, House in Palm Beach",
+            qty_1: 1.0,
+            claim_2: "Jane Doe, daughter, with last 4 SSN digits 5678, USD",
+            qty_2: 1000000.0,
+            claim_3: "George Doe, nephew, with last 4 SSN digits 4567, USD",
+            qty_3: 250000.0,
+            claim_4: "Mary Doe, niece, with last 4 SSN digits 7654, USD",
+            qty_4: 250000.0,
         };
 
         this.loadWeb3().then(async () => {
@@ -126,12 +135,12 @@ class Writer extends Component {
 
         const layout = {
             "columns": {
-                "id": {"type": "LONG", "isIndexed": true, "isUnique": true, "isNullable": false},
-                "ts": {"type": "LONG"},
-                "pubkey": {"type": "STRING"},
-                "sig": {"type": "STRING"},
-                "claim": {"type": "STRING"},
-                "amount": {"type": "DOUBLE"}
+                "id": { "type": "LONG", "isIndexed": true, "isUnique": true, "isNullable": false },
+                "ts": { "type": "LONG" },
+                "pubkey": { "type": "STRING" },
+                "sig": { "type": "STRING" },
+                "claim": { "type": "STRING" },
+                "amount": { "type": "DOUBLE" }
             },
             "idColumnIndex": 0,  // Autogenerates IDs
             "timestampColumnIndex": 1, // Fills the column automatically with the network time
@@ -187,7 +196,7 @@ class Writer extends Component {
 
         //3. check merkle tree
         const resMerkle = await nodeApi.merkleTree(session, data_collection, table
-            , new WeaveHelper.Filter(null, null, null, null, [ "claim", "amount" ])
+            , new WeaveHelper.Filter(null, null, null, null, ["claim", "amount"])
             , "salt1234"
             , "Keccak-512"
             , WeaveHelper.Options.READ_DEFAULT_NO_CHAIN
@@ -208,36 +217,129 @@ class Writer extends Component {
             claim_4, qty_4
         } = this.state;
 
-        return <div>
-            <header>
-                <h1>
+        return <div className="text-gray-300 bg-zinc-800 min-h-screen pb-32">
+            <header className="items-center justify-between pt-12">
+                <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
                     Writing a Will
                 </h1>
-                <h1>
+                <h1 className="mx-auto text-center m-2 text-2xl font-medium font-mono text-gray-300 underline decoration-gray-500">
                     Writer View
                 </h1>
             </header>
 
-            <div>
-                <div>
-                    <span>Connected MetaMask address: </span> <span> {this.state.currentMetamaskAccount}</span>
+            <div class="text-sm items-center text-center mt-6">
+                <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm border shadow-xl border-blue-500/10">
+                    <span className="text-yellow-600">Connected MetaMask address: </span> <span className="text-gray-300"> {this.state.currentMetamaskAccount}</span>
                     <br />
                     <br />
-                    <span>Weavechain public key: </span> <span>{this.state.publicKey}</span>
+                    <span className="text-teal-600">Weavechain public key: </span> <span className="text-gray-300">{this.state.publicKey}</span>
                     <br />
                     <br />
-                    <span>___</span>
+                    <span className="text-gray-300">___</span>
                     <br />
                     <br />
-                    <div>Please introduce the will items</div>
+                    <div className="text-gray-300">Please introduce the will items</div>
                     <br />
 
-                    
-                    <br />
-                    <br />
-                    <button type="submit" onClick={() => this.connect()}>Connect Wallet</button>
+                    <label className="text-yellow-600">Claim #1</label>
                     &nbsp;
-                    <button type="submit" onClick={() => this.write()}>Write</button>
+                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
+                        type="text"
+                        placeholder="0"
+                        value={claim_1}
+                        onChange={(event) => this.setState({ claim_1: event.target.value })}
+                    />
+                    <br />
+                    <label>Amount</label>
+                    &nbsp;
+                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
+                        type="text"
+                        placeholder="0"
+                        value={qty_1}
+                        onChange={(event) => this.setState({ qty_1: event.target.value })}
+                    />
+                    <br />
+                    <br />
+
+                    <label className="text-yellow-600">Claim #2</label>
+                    &nbsp;
+                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
+                        type="text"
+                        placeholder="0"
+                        value={claim_2}
+                        onChange={(event) => this.setState({ claim_2: event.target.value })}
+                    />
+                    <br />
+                    <label>Amount</label>
+                    &nbsp;
+                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
+                        type="text"
+                        placeholder="0"
+                        value={qty_2}
+                        onChange={(event) => this.setState({ qty_2: event.target.value })}
+                    />
+                    <br />
+                    <br />
+
+                    <label className="text-yellow-600">Claim #3</label>
+                    &nbsp;
+                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
+                        type="text"
+                        placeholder="0"
+                        value={claim_3}
+                        onChange={(event) => this.setState({ claim_3: event.target.value })}
+                    />
+                    <br />
+                    <label>Amount</label>
+                    &nbsp;
+                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
+                        type="text"
+                        placeholder="0"
+                        value={qty_3}
+                        onChange={(event) => this.setState({ qty_3: event.target.value })}
+                    />
+                    <br />
+                    <br />
+
+                    <label className="text-yellow-600">Claim #4</label>
+                    &nbsp;
+                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
+                        type="text"
+                        placeholder="0"
+                        value={claim_4}
+                        onChange={(event) => this.setState({ claim_4: event.target.value })}
+                    />
+                    <br />
+                    <label>Amount</label>
+                    &nbsp;
+                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
+                        type="text"
+                        placeholder="0"
+                        value={qty_4}
+                        onChange={(event) => this.setState({ qty_4: event.target.value })}
+                    />
+                    <br />
+                    <br />
+
+                    {!!rootHash ? <>
+                        <span style={{ color: "red" }}>Success</span>
+                        <br />
+                        {rootHash}
+                    </> : null}
+
+                    <br />
+                    <br />
+                    <button
+                        className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                        type="submit" onClick={() => this.connect()}>
+                        Connect Wallet
+                    </button>
+                    &nbsp;
+                    <button
+                        className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                        type="submit" onClick={() => this.write()}>
+                        Write
+                    </button>
                 </div>
             </div>
             <br />

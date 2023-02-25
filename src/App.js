@@ -24,11 +24,11 @@ class App extends Component {
     }
 
     render() {
-        return <div>
-            <div >
+        return <div className="font-mono bg-zinc-800">
+            <div className="font-mono flex items-center justify-between border border-black shadow-xl">
                 <img src={logo} className="logo m-4" alt="logo" />
 
-                <button type="submit" onClick={() => this.switch()}>
+                <button className="px-5 py-2.5 m-4 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow" type="submit" onClick={() => this.switch()}>
                     Switch View
                 </button>
             </div>

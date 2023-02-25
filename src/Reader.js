@@ -2,6 +2,9 @@ import React, { Component, useEffect } from 'react';
 import './App.css';
 import Web3 from 'web3'
 import WeaveHelper from "./weaveapi/helper";
+import { ComputeOptions } from "./weaveapi/options";
+import CodeEditor from "@uiw/react-textarea-code-editor";
+import StringifyWithFloats from "stringify-with-floats"
 import { keccak512 } from 'js-sha3'
 import { binary_to_base58, base58_to_binary } from 'base58-js'
 const solanaWeb3 = require("@solana/web3.js");
@@ -141,7 +144,7 @@ class Reader extends Component {
 
         //2. read merkle tree from source
         const resMerkle = await nodeApi.merkleTree(session, data_collection, table,
-            new WeaveHelper.Filter(null, null, null, null, [ "claim", "amount" ]),
+            new WeaveHelper.Filter(null, null, null, null, ["claim", "amount"]),
             salt,
             digest,
             WeaveHelper.Options.READ_DEFAULT_NO_CHAIN
@@ -244,7 +247,7 @@ class Reader extends Component {
                     }
                 }
             }
-        } catch(error) {
+        } catch (error) {
             this.setState({
                 error: "Failed checking signature"
             });
@@ -266,72 +269,86 @@ class Reader extends Component {
             error
         } = this.state;
 
-        return <section>
-            <header>
-                <h1>
+        return <section className="bg-zinc-800 min-h-screen pb-16">
+            <header className="items-center justify-between pt-12">
+                <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
                     Checking a Claim
                 </h1>
-                <h1>Reader View</h1>
+                <h1 className="mx-auto text-center m-2 text-2xl font-medium font-mono text-gray-300 underline decoration-gray-500">Reader View</h1>
             </header>
 
-            <div>
-                <div>
+            <div class="text-sm items-center text-center mt-6">
+                <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm border shadow-xl border-blue-500/10">
 
-                    <p>
-                        <span>Connected MetaMask address: </span> <span className="text-gray-800"> {this.state.currentMetamaskAccount}</span>
+                    <p class="transition ">
+                        <span className="text-yellow-600">Connected MetaMask address: </span> <span className="text-gray-300"> {this.state.currentMetamaskAccount}</span>
                         <br />
                         <br />
-                        <span>Weavechain public key: </span> <span className="text-gray-800">{this.state.publicKey}</span>
+                        <span className="text-teal-600">Weavechain public key: </span> <span className="text-gray-300">{this.state.publicKey}</span>
                         <br />
-                        <span><a href={"https://explorer.solana.com/address/EiG3thMCVKXKMAKD2ryQvRqx3pEb2ZxjBdRkDQ7At2na?cluster=testnet"} target={"_blank"}>Solana Program Account {storageAccount}</a></span>
+                        <span className="text-indigo-600"><a href={"https://explorer.solana.com/address/EiG3thMCVKXKMAKD2ryQvRqx3pEb2ZxjBdRkDQ7At2na?cluster=testnet"} target={"_blank"}>
+                            Solana Program Account: <span className="text-gray-300">{storageAccount}</span>
+                        </a></span>
                         <br />
                         <br />
-
-                        <label>Claim</label>
+                        <span className="text-gray-300">___</span>
+                        <br />
+                        <br />
+                        <label className="text-yellow-600">Claim</label>
                         &nbsp;
-                        <input style={{width: "600px"}}
-                               type="text"
-                               placeholder="0"
-                               value={claim}
-                               onChange={(event) => this.setState({ claim: event.target.value })}
+                        <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
+                            type="text"
+                            placeholder="0"
+                            value={claim}
+                            onChange={(event) => this.setState({ claim: event.target.value })}
                         />
                         <br />
-                        <label>Amount</label>
+                        <label className="text-yellow-600">Amount</label>
                         &nbsp;
-                        <input style={{width: "100px"}}
-                               type="text"
-                               placeholder="0"
-                               value={qty}
-                               onChange={(event) => this.setState({ qty: event.target.value })}
+                        <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "100px" }}
+                            type="text"
+                            placeholder="0"
+                            value={qty}
+                            onChange={(event) => this.setState({ qty: event.target.value })}
                         />
                         <br />
                         <br />
-                        <label>Secret Salt</label>
+                        <label className="text-yellow-600">Secret Salt</label>
                         &nbsp;
-                        <input style={{width: "100px"}}
-                               type="text"
-                               placeholder="0"
-                               value={salt}
-                               onChange={(event) => this.setState({ salt: event.target.value })}
+                        <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "100px" }}
+                            type="text"
+                            placeholder="0"
+                            value={salt}
+                            onChange={(event) => this.setState({ salt: event.target.value })}
                         />
                         <br />
                         <br />
                         {message ? <>
-                            <span style={{color: "green", whiteSpace: "pre-line"}}>{message}</span>
+                            <span style={{ color: "green", whiteSpace: "pre-line" }}>{message}</span>
                         </> : null}
                         {success ? <>
-                            <span style={{color: "red"}}>Success</span>
-                            </> : null}
+                            <span style={{ color: "red" }}>Success</span>
+                        </> : null}
                         {error ? <>
-                            <span style={{color: "red"}}>{error}</span>
+                            <span style={{ color: "red" }}>{error}</span>
                         </> : null}
 
                         <br />
                         <br />
 
-                        <button type="submit" onClick={() => this.connect()}>Connect Wallet</button>
+                        <button
+                            className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                            type="submit" onClick={() => this.connect()}>
+
+                            Connect Wallet
+                        </button>
                         &nbsp;
-                        <button type="submit" onClick={() => this.check()}>Check Claim</button>
+                        <button
+                            className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                            type="submit" onClick={() => this.check()}>
+
+                            Check Claim
+                        </button>
                     </p>
                 </div>
             </div>
