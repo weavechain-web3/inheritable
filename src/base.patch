@@ -1,0 +1,96 @@
+diff --git a/src/Reader.js b/src/Reader.js
+index 6fb28da..a60c7c6 100644
+--- a/src/Reader.js
++++ b/src/Reader.js
+@@ -14,7 +14,7 @@ const Buffer = require("buffer").Buffer
+ 
+ const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
+ 
+-const authChain = "optimism";
++const authChain = "base";
+ 
+ const organization = "weavedemo";
+ const data_collection = "private";
+@@ -22,13 +22,28 @@ const table = "inheritance";
+ 
+ const digest = "Keccak-512";
+ 
+-const CHAIN_ID = "0x1A4";
++const CHAIN_ID = "0x14A33"; //base testnet
+ const CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
+-//const CHAIN_ID = "0x13881";
++//const CHAIN_ID = "0x1A4"; //optimism testnet
++//const CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
++//const CHAIN_ID = "0x13881"; //polygon testnet
+ //const CONTRACT_ADDRESS = "0xa6cC2c2521af849166D3c9657b5511fD74Cd1C91";
+ 
+ const { ethereum } = window;
+ 
++const CHAIN = {
++	chainId: CHAIN_ID,
++	chainName: "Base Goerli Testnet",
++	nativeCurrency: {
++		name: "ETH",
++		symbol: "ETH",
++		decimals: 18,
++	},
++	rpcUrls: ["https://goerli.base.org"],
++	blockExplorerUrls: ["https://goerli.basescan.org/"],
++};
++
++
+ class Reader extends Component {
+     constructor(props) {
+         super(props);
+@@ -180,10 +195,27 @@ class Reader extends Component {
+                 const tree = resMerkle.data.tree;
+ 
+                 //3. get merkle root from smart contract
++				try {
++					await ethereum.request({
++						method: "wallet_switchEthereumChain",
++						params: [{ chainId: CHAIN_ID }],
++					});
++				} catch (switchError) {
++					try {
++						await ethereum.request({
++							method: "wallet_addEthereumChain",
++							params: [ CHAIN ],
++						});
++					} catch (error) {
++						console.debug(error);
++					}
++				}
++
+                 const res = await window.ethereum.request({
+                     method: 'wallet_switchEthereumChain',
+                     params: [{ chainId: CHAIN_ID }],
+                 })
++
+                 //console.log(await window.web3.eth.net.getId())
+                 //console.log(await window.web3.eth.getChainId())
+ 
+@@ -298,7 +330,7 @@ class Reader extends Component {
+                         <br />
+                         <span className="text-teal-600">Weavechain public key: </span> <span className="text-gray-300">{this.state.publicKey}</span>
+                         <br />
+-                        <span><a href={"https://blockscout.com/optimism/goerli/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract {CONTRACT_ADDRESS}</a></span>
++                        <span><a href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract {CONTRACT_ADDRESS}</a></span>
+ 
+                         <br />
+                         <br />
+diff --git a/src/Writer.js b/src/Writer.js
+index bc7cc3f..83fe7e3 100644
+--- a/src/Writer.js
++++ b/src/Writer.js
+@@ -31,8 +31,8 @@ class Writer extends Component {
+             publicKey = keys[0];
+             privateKey = keys[1];
+         } else {
+-            publicKey = "weavexUTKAe7J5faqmiq94DXXWntyRBA8bPwmrUbCtebxWd3f";
+-            privateKey = "FpEPgjyVeYzMSb9jJtk4uhVyoNDAo8qWuoMYPKo1dXdM";
++            publicKey = "weave283zqhDkng9jjQvTrWhmodR8R32QR1WV1w65jysGyefDC";
++            privateKey = "FnJJikMtRXC3LvLi7hpGn5srPRmrecHNz5mWbzgpkxJb";
+         }
+ 
+         this.state = {

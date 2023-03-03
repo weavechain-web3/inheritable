@@ -1,6 +1,7 @@
 import React, { Component, useEffect } from 'react';
 import Writer from './Writer';
 import Reader from './Reader';
+import Oracle from './Oracle';
 import logo from './logo.svg';
 
 
@@ -19,7 +20,7 @@ class App extends Component {
 
     switch() {
         this.setState({
-            screen: (this.state.screen + 1) % 2
+            screen: (this.state.screen + 1) % 3
         });
     }
 
@@ -32,8 +33,8 @@ class App extends Component {
                     Switch View
                 </button>
             </div>
-            {this.state.screen == 0
-                ? <Writer />
+            {this.state.screen == 0 ? <Writer />
+                : this.state.screen == 1 ? <Oracle />
                 : <Reader />
             }
         </div>;

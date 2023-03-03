@@ -14,20 +14,35 @@ const Buffer = require("buffer").Buffer
 
 const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
 
-const authChain = "optimism";
+const authChain = "base";
 
 const organization = "weavedemo";
 const data_collection = "private";
-const table = "inheritance";
+const table = "inheritance2";
 
 const digest = "Keccak-512";
 
-const CHAIN_ID = "0x1A4";
+const CHAIN_ID = "0x14A33"; //base testnet
 const CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
-//const CHAIN_ID = "0x13881";
+//const CHAIN_ID = "0x1A4"; //optimism testnet
+//const CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
+//const CHAIN_ID = "0x13881"; //polygon testnet
 //const CONTRACT_ADDRESS = "0xa6cC2c2521af849166D3c9657b5511fD74Cd1C91";
 
 const { ethereum } = window;
+
+const CHAIN = {
+	chainId: CHAIN_ID,
+	chainName: "Base Goerli Testnet",
+	nativeCurrency: {
+		name: "ETH",
+		symbol: "ETH",
+		decimals: 18,
+	},
+	rpcUrls: ["https://goerli.base.org"],
+	blockExplorerUrls: ["https://goerli.basescan.org/"],
+};
+
 
 class Reader extends Component {
     constructor(props) {
@@ -35,7 +50,7 @@ class Reader extends Component {
 
         let publicKey = null;
         let privateKey = null;
-        if (false) {
+        if (true) {
             //Keys management needs to be made by the application:
             // - keys generated only once and kept in local app storage
             // - probably the user fills personal details in the app and the keys are uploaded together with that
@@ -55,8 +70,8 @@ class Reader extends Component {
             publicKey: publicKey,
             privateKey: privateKey,
             credentials: null,
-            claim: "George Doe, nephew, with last 4 SSN digits 4567, USD",
-            qty: 250000.0,
+            claim: "",
+            qty: 0.0,
             salt: "salt1234",
             success: false,
             message: null,
@@ -86,7 +101,9 @@ class Reader extends Component {
                 eth_accounts: {},
             }]
         });
-        this.setState({ currentMetamaskAccount: await this.getCurrentMetamaskAccount() });
+        const account = await this.getCurrentMetamaskAccount();
+
+        this.setState({ currentMetamaskAccount: account });
 
         //a new key is generated every time, so there is no key management needed for the consumer (which does not need to know about weavechain)
         // rights will be inherited based on the wallet ownership proof and NFT ownership (could also be payments on chain)
@@ -96,26 +113,30 @@ class Reader extends Component {
 
         //This message must match what's hashed on server side, changing it here should trigger changing it also in the node
         let msg = "Please sign this message to confirm you own this wallet\nThere will be no blockchain transaction or any gas fees." +
-            "\n\nWallet: " + this.state.currentMetamaskAccount +
+            "\n\nWallet: " + account +
             "\nKey: " + pub;
 
         const sig = await ethereum.request({
             method: 'personal_sign',
-            params: [this.state.currentMetamaskAccount, msg]
+            params: [account, msg]
         });
 
         const credentials = {
-            "account": authChain + ":" + this.state.currentMetamaskAccount,
+            "account": authChain + ":" + account,
             "sig": sig,
             "template": "*",
             "role": "*"
         }
+
+        console.log(credentials)
 
         this.setState({
             publicKey: pub,
             privateKey: pvk,
             credentials: credentials
         });
+
+        this.login();
     }
 
 
@@ -136,6 +157,26 @@ class Reader extends Component {
         return { nodeApi, session };
     }
 
+    async readClaim() {
+        //1. login. The login could be done only once if the nodeApi and session variables are kept in the component state
+        const { nodeApi, session } = await this.login();
+        console.log(this.state.credentials)
+
+        const filter = null;
+        const res = await nodeApi.read(session, data_collection, table, filter, WeaveHelper.Options.READ_DEFAULT_NO_CHAIN)
+        console.log(res)
+
+        if (res.data && res.data.length > 0) {
+            //2. read the claim from source
+            const item = res.data[0];
+            this.setState({
+                claim: item.claim,
+                qty: (item.amount + "").includes(".") ? item.amount : item.amount + ".0"
+            });
+
+        }
+    }
+
     async check() {
         const {
             claim,
@@ -148,7 +189,7 @@ class Reader extends Component {
 
         //2. read merkle tree from source
         const resMerkle = await nodeApi.merkleTree(session, data_collection, table,
-            new WeaveHelper.Filter(null, null, null, null, ["claim", "amount"]),
+            new WeaveHelper.Filter(null, null, null, null, [ "claim", "amount" ]),
             salt,
             digest,
             WeaveHelper.Options.READ_DEFAULT_NO_CHAIN
@@ -180,10 +221,27 @@ class Reader extends Component {
                 const tree = resMerkle.data.tree;
 
                 //3. get merkle root from smart contract
+				try {
+					await ethereum.request({
+						method: "wallet_switchEthereumChain",
+						params: [{ chainId: CHAIN_ID }],
+					});
+				} catch (switchError) {
+					try {
+						await ethereum.request({
+							method: "wallet_addEthereumChain",
+							params: [ CHAIN ],
+						});
+					} catch (error) {
+						console.debug(error);
+					}
+				}
+
                 const res = await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: CHAIN_ID }],
                 })
+
                 //console.log(await window.web3.eth.net.getId())
                 //console.log(await window.web3.eth.getChainId())
 
@@ -257,7 +315,7 @@ class Reader extends Component {
                     }
                 }
             }
-        } catch (error) {
+        } catch(error) {
             console.log(error);
             success = false;
             this.setState({
@@ -298,7 +356,7 @@ class Reader extends Component {
                         <br />
                         <span className="text-teal-600">Weavechain public key: </span> <span className="text-gray-300">{this.state.publicKey}</span>
                         <br />
-                        <span><a href={"https://blockscout.com/optimism/goerli/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract {CONTRACT_ADDRESS}</a></span>
+                        <span><a href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract {CONTRACT_ADDRESS}</a></span>
 
                         <br />
                         <br />
@@ -352,6 +410,13 @@ class Reader extends Component {
                             type="submit" onClick={() => this.connect()}>
 
                             Connect Wallet
+                        </button>
+                        &nbsp;
+                        <button
+                            className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                            type="submit" onClick={() => this.readClaim()}>
+
+                            Read Claim
                         </button>
                         &nbsp;
                         <button
