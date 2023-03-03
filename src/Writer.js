@@ -4,8 +4,7 @@ import Web3 from 'web3'
 import WeaveHelper from "./weaveapi/helper";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 
-const sideChain = "https://public.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
-
+const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
 const authChain = "gnosis";
 
 const organization = "weavedemo";

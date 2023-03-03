@@ -7,13 +7,14 @@ import CodeEditor from "@uiw/react-textarea-code-editor";
 import StringifyWithFloats from "stringify-with-floats"
 import { keccak512 } from 'js-sha3'
 import { binary_to_base58, base58_to_binary } from 'base58-js'
+import WeaveHash_abi from "./WeaveHash_abi.json";
 const solanaWeb3 = require("@solana/web3.js");
 const Buffer = require("buffer").Buffer
 
 
-const sideChain = "https://public.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
+const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
 
-const authChain = "gnosis";
+const authChain = "optimism";
 
 const organization = "weavedemo";
 const data_collection = "private";
@@ -21,7 +22,10 @@ const table = "inheritance";
 
 const digest = "Keccak-512";
 
-const storageAccount = "EiG3thMCVKXKMAKD2ryQvRqx3pEb2ZxjBdRkDQ7At2na"; //The program storage account that keeps the merkle root and signature from the owner
+const CHAIN_ID = "0x1A4";
+const CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
+//const CHAIN_ID = "0x13881";
+//const CONTRACT_ADDRESS = "0xa6cC2c2521af849166D3c9657b5511fD74Cd1C91";
 
 const { ethereum } = window;
 
@@ -175,23 +179,29 @@ class Reader extends Component {
                 const signature = resMerkle.data.signature;
                 const tree = resMerkle.data.tree;
 
-                //3. get merkle root from solana contract
-                let connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("testnet"), "confirmed");
-                const programAccount = new solanaWeb3.PublicKey(storageAccount);
-                const accountInfo = await connection.getAccountInfo(programAccount, "confirmed");
-                const data = accountInfo.data;
-                //console.log(data)
+                //3. get merkle root from smart contract
+                const res = await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: CHAIN_ID }],
+                })
+                //console.log(await window.web3.eth.net.getId())
+                //console.log(await window.web3.eth.getChainId())
+
+                let accounts = await window.ethereum.request({
+                    method: "eth_requestAccounts",
+                });
+                const account = Web3.utils.toChecksumAddress(accounts[0]);
+                console.log(account)
+
+                const contract = await new window.web3.eth.Contract(WeaveHash_abi, CONTRACT_ADDRESS, { from: account });
+                //console.log(contract.methods)
+                const fn = contract.methods.readHashes();
+                const items = await fn.call({ chainId: CHAIN_ID });
+                console.log(items)
 
                 //4. check merkle root on chain matches merkle root received from node
-                const hlenarr = data.slice(0, 4); //int little endian
-                const hlen = hlenarr[0] + (hlenarr[1] << 8) + (hlenarr[2] << 16) + (hlenarr[3] << 24);
-                const chainRootHash = new TextDecoder().decode(data.slice(4, 4 + hlen));
-                //console.log(chainRootHash)
-                const mlenarr = data.slice(4 + hlen, 8 + hlen); //int little endian
-                const mlen = mlenarr[0] + (mlenarr[1] << 8) + (mlenarr[2] << 16) + (mlenarr[3] << 24);
-                const mdata = new TextDecoder().decode(data.slice(8 + hlen, data.length));
-                //console.log(mdata);
-                const metadata = JSON.parse(mdata);
+                const chainRootHash = items[2];
+                const metadata = JSON.parse(items[3]);
                 const chainTs = metadata.ts;
                 const chainRootHashSignature = metadata.signature;
 
@@ -248,6 +258,8 @@ class Reader extends Component {
                 }
             }
         } catch (error) {
+            console.log(error);
+            success = false;
             this.setState({
                 error: "Failed checking signature"
             });
@@ -286,9 +298,8 @@ class Reader extends Component {
                         <br />
                         <span className="text-teal-600">Weavechain public key: </span> <span className="text-gray-300">{this.state.publicKey}</span>
                         <br />
-                        <span className="text-indigo-600"><a href={"https://explorer.solana.com/address/EiG3thMCVKXKMAKD2ryQvRqx3pEb2ZxjBdRkDQ7At2na?cluster=testnet"} target={"_blank"}>
-                            Solana Program Account: <span className="text-gray-300">{storageAccount}</span>
-                        </a></span>
+                        <span><a href={"https://blockscout.com/optimism/goerli/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract {CONTRACT_ADDRESS}</a></span>
+
                         <br />
                         <br />
                         <span className="text-gray-300">___</span>
