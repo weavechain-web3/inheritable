@@ -14,7 +14,7 @@ const { ethereum } = window;
 const gasPrice = 1000; //saving tokens. It seems any gas price will work (for now) as the netowrk is not used
 
 const CHAIN_ID = "0x14A33"; //base testnet
-const CONTRACT_ADDRESS = "0x95bf3fc55aB20b4Dfc46EA20f9233D07038a6515";
+const CONTRACT_ADDRESS = "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
 
 const CHAIN = {
 	chainId: CHAIN_ID,
@@ -35,6 +35,7 @@ class Oracle extends Component {
 
         this.state = {
             currentMetamaskAccount: null,
+            signed: 0,
             oraclesCount: 0,
             unlocked: false,
         };
@@ -62,9 +63,18 @@ class Oracle extends Component {
     async status() {
         const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS);
         const oracles = await contract.methods.OraclesCount().call({ chainId: CHAIN_ID });
+        let signed = 0;
+        for (let i = 0; i < oracles; i++) {
+            const o = await contract.methods.Oracles(i).call({ chainId: CHAIN_ID });
+            if (o.signature.length > 0) {
+                signed++;
+            }
+        }
+
         const unlocked = await contract.methods.Unlocked().call({ chainId: CHAIN_ID });
         this.setState({
             oraclesCount: oracles,
+            signed: signed,
             unlocked: unlocked > 0
         })
     }
@@ -120,7 +130,7 @@ class Oracle extends Component {
                         <br />
                         <br />
                         <br />
-                        <label className="text-zinc-500">Oracles Count:</label> <span className="text-yellow-600">{this.state.oraclesCount}</span>
+                        <label className="text-zinc-500">Oracles Count:</label> <span className="text-yellow-600">{this.state.signed} / {this.state.oraclesCount}</span>
                         <br />
                         <label className="text-zinc-500">Will Unlocked:</label> <span className="text-yellow-600">{this.state.unlocked ? "Yes" : "No"}</span>
                         <br />

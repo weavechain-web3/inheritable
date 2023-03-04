@@ -2,15 +2,14 @@ import React, { Component, useEffect } from 'react';
 import './App.css';
 import Web3 from 'web3'
 import WeaveHelper from "./weaveapi/helper";
-import { ComputeOptions } from "./weaveapi/options";
-import CodeEditor from "@uiw/react-textarea-code-editor";
-import StringifyWithFloats from "stringify-with-floats"
 import { keccak512 } from 'js-sha3'
 import { binary_to_base58, base58_to_binary } from 'base58-js'
 import WeaveHash_abi from "./WeaveHash_abi.json";
+import Inheritance_abi from "./Inheritance_abi.json";
+import mermaid from "mermaid";
+
 const solanaWeb3 = require("@solana/web3.js");
 const Buffer = require("buffer").Buffer
-
 
 const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
 
@@ -22,12 +21,18 @@ const table = "inheritance2";
 
 const digest = "Keccak-512";
 
+const gasPrice = 1000; //saving tokens. It seems any gas price will work (for now) as the netowrk is not used
+
 const CHAIN_ID = "0x14A33"; //base testnet
-const CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
+const HASH_CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
 //const CHAIN_ID = "0x1A4"; //optimism testnet
-//const CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
+//const HASH_CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
 //const CHAIN_ID = "0x13881"; //polygon testnet
-//const CONTRACT_ADDRESS = "0xa6cC2c2521af849166D3c9657b5511fD74Cd1C91";
+//const HASH_CONTRACT_ADDRESS = "0xa6cC2c2521af849166D3c9657b5511fD74Cd1C91";
+
+const CONTRACT_ADDRESS = "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
+
+const SHOW_WITHDRAW = false;
 
 const { ethereum } = window;
 
@@ -74,9 +79,13 @@ class Reader extends Component {
             qty: 0.0,
             salt: "salt1234",
             success: false,
+            claimHash: "",
+            flowChart: "",
             message: null,
             error: null
         };
+
+        this.mermaidRef = React.createRef();
 
         this.loadWeb3().then(async () => {
         });
@@ -205,6 +214,8 @@ class Reader extends Component {
 
         let message = null;
         let success = !!resMerkle?.data;
+        let flowChart = "";
+        let claimHash = "";
         if (!success) {
             this.setState({
                 error: "No merkle tree received"
@@ -251,11 +262,11 @@ class Reader extends Component {
                 const account = Web3.utils.toChecksumAddress(accounts[0]);
                 console.log(account)
 
-                const contract = await new window.web3.eth.Contract(WeaveHash_abi, CONTRACT_ADDRESS, { from: account });
+                const contract = await new window.web3.eth.Contract(WeaveHash_abi, HASH_CONTRACT_ADDRESS, { from: account });
                 //console.log(contract.methods)
                 const fn = contract.methods.readHashes();
                 const items = await fn.call({ chainId: CHAIN_ID });
-                console.log(items)
+                //console.log(items)
 
                 //4. check merkle root on chain matches merkle root received from node
                 const chainRootHash = items[2];
@@ -298,6 +309,26 @@ class Reader extends Component {
                         //console.log(recordHash)
                         const resVerifyTree = await nodeApi.verifyMerkleHash(session, tree, recordHash, digest);
                         console.log(resVerifyTree);
+                        claimHash = recordHash.substr(0, 5) + "..." + recordHash.substr(recordHash.length - 5);
+
+                        const items = tree.split(";")
+                        const levels = [];
+                        for (let i in items) {
+                            levels.push(items[i].split(","));
+                        }
+                        flowChart = "graph TD;\n";
+                        for (let i = 1; i < levels.length; i++) {
+                            for (let j = 0; j < levels[i].length; j++) {
+                                let p = levels[i - 1][parseInt(j / 2)];
+                                let c = levels[i][j];
+                                p = p.substr(0, 5) + "..." + p.substr(p.length - 5);
+                                c = c.substr(0, 5) + "..." + c.substr(c.length - 5);
+                                const rel = p + "(" + p + ")-->" + c + "(" + c + ")";
+                                flowChart += rel + "\n";
+                            }
+                        }
+                        //console.log(levels);
+                        //console.log(flowChart);
 
                         success = resVerifyTree.data === "true";
                         console.log(success)
@@ -324,8 +355,21 @@ class Reader extends Component {
         }
 
         this.setState({
-            success: success
-        })
+            success: success,
+            flowChart: flowChart,
+            claimHash: claimHash
+        });
+    }
+
+    async withdraw() {
+        const account = await this.getCurrentMetamaskAccount();
+        const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS, { from: account });
+
+        const res = await contract.methods.withdraw().send({ from: account, gasPrice: gasPrice });
+        console.log(res);
+    }
+
+    componentDidMount() {
     }
 
     render() {
@@ -335,9 +379,18 @@ class Reader extends Component {
             salt,
             merkle,
             success,
+            flowChart,
+            claimHash,
             message,
             error
         } = this.state;
+
+        if (flowChart && flowChart.length > 0) {
+            setTimeout(() => {
+                mermaid.init();
+                mermaid.contentLoaded();
+            }, 1);
+        }
 
         return <section className="bg-zinc-800 min-h-screen pb-16">
             <header className="items-center justify-between pt-12">
@@ -356,7 +409,7 @@ class Reader extends Component {
                         <br />
                         <span className="text-teal-600">Weavechain public key: </span> <span className="text-gray-300">{this.state.publicKey}</span>
                         <br />
-                        <span><a href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract {CONTRACT_ADDRESS}</a></span>
+                        <span><a href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract {HASH_CONTRACT_ADDRESS}</a></span>
 
                         <br />
                         <br />
@@ -367,7 +420,7 @@ class Reader extends Component {
                         &nbsp;
                         <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
                             type="text"
-                            placeholder="0"
+                            placeholder=""
                             value={claim}
                             onChange={(event) => this.setState({ claim: event.target.value })}
                         />
@@ -386,7 +439,7 @@ class Reader extends Component {
                         &nbsp;
                         <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "100px" }}
                             type="text"
-                            placeholder="0"
+                            placeholder=""
                             value={salt}
                             onChange={(event) => this.setState({ salt: event.target.value })}
                         />
@@ -404,6 +457,13 @@ class Reader extends Component {
 
                         <br />
                         <br />
+
+                        {claimHash && claimHash.length > 0 ?
+                            <>
+                                <label className="text-yellow-600">Your Claim Hash: </label>
+                                <span className="text-gray-300">{claimHash}</span>
+                            </> : null}
+                        <div id="mermaid0" ref={this.mermaidRef} className="mermaid">{flowChart}</div>
 
                         <button
                             className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
@@ -425,6 +485,13 @@ class Reader extends Component {
 
                             Verify Particular Claim
                         </button>
+                        &nbsp;
+                        {SHOW_WITHDRAW ? <button
+                            className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                            type="submit" onClick={() => this.withdraw()}>
+
+                            Withdraw
+                        </button> : null}
                     </p>
                 </div>
             </div>

@@ -10,8 +10,7 @@ ETH_NODE = "https://goerli.base.org"
 CHAIN_ID = 84531
 
 CLASS_NAME = "Inheritance"
-#DEPLOY_CFG = "deploy.json"
-DEPLOY_CFG = "deploy_codiaxtest.json"
+DEPLOY_CFG = "deploy.json"
 
 
 with open(DEPLOY_CFG, "r") as f:
@@ -30,7 +29,7 @@ if PRIVATE_KEY_FILE is not None:
 SOURCE = CLASS_NAME + ".sol"
 ABI_FILE = CLASS_NAME + "_abi.json"
 BINARY_FILE = CLASS_NAME + ".bin"
-CONTRACT_FILE = CLASS_NAME + "_address_polygon_testnet.txt"
+CONTRACT_FILE = CLASS_NAME + "_address_testnet.txt"
 
 
 spec = {
@@ -61,7 +60,7 @@ pvk = extract_key_from_keyfile(PRIVATE_KEY_FILE, PASS)
 nonce = w3.eth.getTransactionCount(ACCOUNT)
 
 temp = w3.eth.contract(bytecode=bytecode, abi=abi)
-txn = temp.constructor().buildTransaction({"chainId": CHAIN_ID, "from": me, "gas": 10000000, "nonce": nonce})
+txn = temp.constructor().buildTransaction({"chainId": CHAIN_ID, "from": me, "gas": 10000, "nonce": nonce})
 
 
 signed_tx = w3.eth.account.signTransaction(txn, private_key=pvk.hex())

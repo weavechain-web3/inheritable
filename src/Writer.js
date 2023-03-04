@@ -22,11 +22,13 @@ const data_collection = "private";
 const table = "inheritance2";
 
 const CHAIN_ID = "0x14A33"; //base testnet
-const CONTRACT_ADDRESS = "0x95bf3fc55aB20b4Dfc46EA20f9233D07038a6515";
+const CONTRACT_ADDRESS = "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
 
 const TOKEN_ADDRESS = "0xf26490E8bdFfa5EBE8625Bafa967560303D802E4";
 
 const DECIMALS = 6;
+
+const STORE_AMOUNTS = false;
 
 const { ethereum } = window;
 
@@ -68,13 +70,13 @@ class Writer extends Component {
             wallet_1: "0x000012345",
             claim_2: "Jane Doe, daughter, with last 4 SSN digits 5678, Fiat USD",
             qty_2: 200,
-            wallet_2: "0x111112345",
+            wallet_2: "0x95F453718C4f8b73d6C7CCc9Df1ad4bdF40286A6",
             claim_3: "George Doe, nephew, with last 4 SSN digits 4567, Fiat USD",
             qty_3: 300,
-            wallet_3: "0x222212345",
+            wallet_3: "0x1bC466cB75a831eB10E00bC67f0Fa82d3Df1b95D",
             claim_4: "Mary Doe, niece, with last 4 SSN digits 7654, Fiat USD",
             qty_4: 400,
-            wallet_4: "0x333312345",
+            wallet_4: "0x726a746A5020d363E257cB181bECb833e07d77Ad",
         };
 
         this.loadWeb3().then(async () => {
@@ -176,6 +178,45 @@ class Writer extends Component {
             "applyReadTransformations": true
         };
 
+
+        let accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+        });
+        const account = Web3.utils.toChecksumAddress(accounts[0]);
+        console.log(account)
+
+        const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS, { from: account });
+        const feeToken = await new window.web3.eth.Contract(FiatTokenV1_abi, TOKEN_ADDRESS, { from: account });
+
+        const res = await contract.methods.setOracles([
+            this.state.oracle_1,
+            this.state.oracle_2,
+            this.state.oracle_3
+        ]).send({ chainId: CHAIN_ID, gasPrice: gasPrice });
+        console.log(res)
+        console.log(await contract.methods.Oracles(0).call())
+
+        if (STORE_AMOUNTS) {
+            const wallets = [wallet_1, wallet_2, wallet_3, wallet_4];
+            const qty = [qty_1, qty_2, qty_3, qty_4];
+            const amounts = [];
+            let sum = 0;
+            for (let i = 0; i < amounts.length; i++) {
+                const amount = qty[i];
+                sum = sum + Math.max(0, amount)
+                amounts.push(amount * Math.pow(10, DECIMALS));
+            }
+            const approveRes = await feeToken.methods.approve(TOKEN_ADDRESS, sum).send({
+                from: account,
+                gasPrice: gasPrice
+            });
+            console.log(approveRes);
+
+            const lockRes = await contract.methods.lock(wallets, amounts).send({chainId: CHAIN_ID, gasPrice: gasPrice});
+            console.log(lockRes)
+        }
+
+
         const resDrop = await nodeApi.dropTable(session, data_collection, table, WeaveHelper.Options.DROP_FAILSAFE);
         //console.log(resDrop)
         const resCreate = await nodeApi.createTable(session, data_collection, table, new WeaveHelper.Options.CreateOptions(false, false, layout));
@@ -222,7 +263,7 @@ class Writer extends Component {
         ];
         const records = new WeaveHelper.Records(table, items);
         const resWrite = await nodeApi.write(session, data_collection, records, WeaveHelper.Options.WRITE_DEFAULT)
-        //console.log(resWrite)
+        console.log(resWrite)
 
         //3. check merkle tree
         const resMerkle = await nodeApi.merkleTree(session, data_collection, table
@@ -232,48 +273,6 @@ class Writer extends Component {
             , WeaveHelper.Options.READ_DEFAULT_NO_CHAIN
         );
         console.log(resMerkle);
-
-        let accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-        });
-        const account = Web3.utils.toChecksumAddress(accounts[0]);
-        console.log(account)
-
-
-        const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS, { from: account });
-        const feeToken = await new window.web3.eth.Contract(FiatTokenV1_abi, TOKEN_ADDRESS, { from: account });
-
-        const res = await contract.methods.setOracles([
-            this.state.oracle_1,
-            this.state.oracle_2,
-            this.state.oracle_3
-        ]).send({ chainId: CHAIN_ID, gasPrice: gasPrice });
-        console.log(res)
-        console.log(await contract.methods.Oracles(0).call())
-
-        /*
-        const wallets = [ wallet_1, wallet_2, wallet_3, wallet_4 ];
-        const amounts = [ qty_1, qty_2, qty_3, qty_4 ];
-        let sum = 0;
-        for (let i = 0; i < amounts.length; i++) {
-            const amount = amounts[i];
-            sum = sum + Math.max(0, amount)
-        }
-        const approve = await feeToken.methods.approve(TOKEN_ADDRESS, sum * Math.pow(10, DECIMALS)).send({ from: account, gasPrice: gasPrice });
-        console.log(approve);
-
-        for (let i = 0; i < wallets.length; i++) {
-            const wallet = wallets[i];
-            const amount = amounts[i];
-
-            //TODO: pack this as a single call in a smart contract
-            if (amount > 0) {
-
-                const res = await contract.methods.lock(wallet, amount * Math.pow(10, DECIMALS)).send({chainId: CHAIN_ID, gasPrice: gasPrice});
-                console.log(res)
-            }
-        }
-         */
 
         this.setState({ rootHash: resMerkle?.data?.rootHash });
 
