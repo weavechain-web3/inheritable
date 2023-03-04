@@ -291,7 +291,7 @@ class Writer extends Component {
         } = this.state;
 
         return (
-            <div className="text-gray-300 bg-zinc-800 min-h-screen pb-32">
+            <div className="text-gray-300 bg-black min-h-screen pb-32">
                 <header className="items-center justify-between pt-12">
                     <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
                         Write Will
