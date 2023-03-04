@@ -416,14 +416,14 @@ class Reader extends Component {
                             className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
                             type="submit" onClick={() => this.readClaim()}>
 
-                            Check Eligibility
+                            View Your Claim
                         </button>
                         &nbsp;
                         <button
                             className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
                             type="submit" onClick={() => this.check()}>
 
-                            Verify Claim
+                            Verify Particular Claim
                         </button>
                     </p>
                 </div>
