@@ -3,6 +3,8 @@ import Writer from './Writer';
 import Reader from './Reader';
 import Oracle from './Oracle';
 import logo from './logo.svg';
+import inherilogo from './resources/inheri-logo.svg';
+
 
 
 
@@ -25,9 +27,12 @@ class App extends Component {
     }
 
     render() {
-        return <div className="font-mono bg-zinc-800">
-            <div className="font-mono flex items-center justify-between border border-black shadow-xl">
+        return <div className="font-inter bg-zinc-800">
+            <div className="font-inter flex items-center justify-between border border-black shadow-xl">
+
                 <img src={logo} className="logo m-4" alt="logo" />
+                <img src={inherilogo} className="logo m-4" alt="logo" />
+
 
                 <button className="px-5 py-2.5 m-4 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow" type="submit" onClick={() => this.switch()}>
                     Switch View
@@ -35,7 +40,7 @@ class App extends Component {
             </div>
             {this.state.screen == 0 ? <Writer />
                 : this.state.screen == 1 ? <Oracle />
-                : <Reader />
+                    : <Reader />
             }
         </div>;
     }

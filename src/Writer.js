@@ -3,9 +3,12 @@ import './App.css';
 import Web3 from 'web3'
 import WeaveHelper from "./weaveapi/helper";
 import CodeEditor from "@uiw/react-textarea-code-editor";
+import Claim from './components/claim';
+import Form from './components/form';
 
 import Inheritance_abi from "./Inheritance_abi.json";
 import FiatTokenV1_abi from "./FiatTokenV1_abi.json";
+import SidebarWrapper from './components/sidebar-wrapper';
 
 const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
 //const sideChain = "http://localhost:18080/92f30f0b6be2732cb817c19839b0940c";
@@ -156,13 +159,13 @@ class Writer extends Component {
 
         const layout = {
             "columns": {
-                "id": {"type": "LONG", "isIndexed": true, "isUnique": true, "isNullable": false},
-                "ts": {"type": "LONG"},
-                "pubkey": {"type": "STRING"},
-                "sig": {"type": "STRING"},
-                "roles": {"type": "STRING"},
-                "claim": {"type": "STRING"},
-                "amount": {"type": "DOUBLE"}
+                "id": { "type": "LONG", "isIndexed": true, "isUnique": true, "isNullable": false },
+                "ts": { "type": "LONG" },
+                "pubkey": { "type": "STRING" },
+                "sig": { "type": "STRING" },
+                "roles": { "type": "STRING" },
+                "claim": { "type": "STRING" },
+                "amount": { "type": "DOUBLE" }
             },
             "idColumnIndex": 0,  // Autogenerates IDs
             "timestampColumnIndex": 1, // Fills the column automatically with the network time
@@ -185,7 +188,7 @@ class Writer extends Component {
                 null, // timestamp
                 null, // writer
                 null, // signature of writer
-                "writer," + authChain + ":" + wallet_1 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked" ,
+                "writer," + authChain + ":" + wallet_1 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
                 claim_1,
                 qty_1
             ],
@@ -194,7 +197,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_2 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked" ,
+                "writer," + authChain + ":" + wallet_2 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
                 claim_2,
                 qty_2
             ],
@@ -203,7 +206,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_3 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked" ,
+                "writer," + authChain + ":" + wallet_3 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
                 claim_3,
                 qty_3
             ],
@@ -212,7 +215,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_4 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked" ,
+                "writer," + authChain + ":" + wallet_4 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
                 claim_4,
                 qty_4
             ]
@@ -223,7 +226,7 @@ class Writer extends Component {
 
         //3. check merkle tree
         const resMerkle = await nodeApi.merkleTree(session, data_collection, table
-            , new WeaveHelper.Filter(null, null, null, null, [ "claim", "amount" ])
+            , new WeaveHelper.Filter(null, null, null, null, ["claim", "amount"])
             , "salt1234"
             , "Keccak-512"
             , WeaveHelper.Options.READ_DEFAULT_NO_CHAIN
@@ -287,201 +290,244 @@ class Writer extends Component {
             claim_4, qty_4, wallet_4,
         } = this.state;
 
-        return <div className="text-gray-300 bg-zinc-800 min-h-screen pb-32">
-            <header className="items-center justify-between pt-12">
-                <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
-                    Writing a Will
-                </h1>
-                <h1 className="mx-auto text-center m-2 text-2xl font-medium font-mono text-gray-300 underline decoration-gray-500">
-                    Writer View
-                </h1>
-            </header>
+        return (
+            <div className="text-gray-300 bg-zinc-800 min-h-screen pb-32">
+                <header className="items-center justify-between pt-12">
+                    <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
+                        Write Will
+                    </h1>
+                </header>
 
-            <div class="text-sm items-center text-center mt-6">
-                <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm border shadow-xl border-blue-500/10">
-                    <span className="text-yellow-600">Connected MetaMask address: </span> <span className="text-gray-300"> {this.state.currentMetamaskAccount}</span>
-                    <br />
-                    <br />
-                    <span className="text-teal-600">Weavechain public key: </span> <span className="text-gray-300">{this.state.publicKey}</span>
-                    <br />
-                    <br />
-                    <span className="text-gray-300">___</span>
-                    <br />
-                    <br />
-                    <div>Please introduce the oracles</div>
-                    <br />
-                    <label className="text-yellow-600">Oracle #1</label>
-                    &nbsp;
-                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{width: "600px"}}
-                           type="text"
-                           placeholder=""
-                           value={oracle_1}
-                           onChange={(event) => this.setState({ oracle_1: event.target.value })}
-                    />
-                    <br />
-                    <label className="text-yellow-600">Oracle #2</label>
-                    &nbsp;
-                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{width: "600px"}}
-                           type="text"
-                           placeholder=""
-                           value={oracle_2}
-                           onChange={(event) => this.setState({ oracle_2: event.target.value })}
-                    />
-                    <br />
-                    <label className="text-yellow-600">Oracle #3</label>
-                    &nbsp;
-                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{width: "600px"}}
-                           type="text"
-                           placeholder=""
-                           value={oracle_3}
-                           onChange={(event) => this.setState({ oracle_3: event.target.value })}
-                    />
-                    <br />
+                <div class="text-sm items-center text-center mt-6">
+                    <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm border shadow-xl border-blue-500/10">
+                        <div className="flex justify-between">
+                            <p className="text-white font-bold text-left">Connected MetaMask address: </p><span className="text-gray-300">{this.state.currentMetamaskAccount}</span>
+                        </div>
+                        <div className='flex justify-between'>
+                            <span className="text-white font-bold text-left">Weavechain public key: </span><span className="text-gray-300">{this.state.publicKey}</span>
+                        </div>
 
-                    <br />
-                    <br />
-                    <div>Please introduce the will items</div>
-                    <br />
-
-                    <label className="text-yellow-600">Claim #1</label>
-                    &nbsp;
-                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
-                        type="text"
-                        placeholder=""
-                        value={claim_1}
-                        onChange={(event) => this.setState({ claim_1: event.target.value })}
-                    />
-                    <br />
-                    <label>USDC Amount</label>
-                    &nbsp;
-                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
-                        type="text"
-                        placeholder="0"
-                        value={qty_1}
-                        onChange={(event) => this.setState({ qty_1: event.target.value })}
-                    />
-                    <br />
-                    <label>Wallet</label>
-                    &nbsp;
-                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{width: "400px"}}
-                           type="text"
-                           placeholder=""
-                           value={wallet_1}
-                           onChange={(event) => this.setState({ wallet_1: event.target.value })}
-                    />
-                    <br />
-                    <br />
-
-                    <label className="text-yellow-600">Claim #2</label>
-                    &nbsp;
-                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
-                        type="text"
-                        placeholder=""
-                        value={claim_2}
-                        onChange={(event) => this.setState({ claim_2: event.target.value })}
-                    />
-                    <br />
-                    <label>USDC Amount</label>
-                    &nbsp;
-                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
-                        type="text"
-                        placeholder="0"
-                        value={qty_2}
-                        onChange={(event) => this.setState({ qty_2: event.target.value })}
-                    />
-                    <br />
-                    <label>Wallet</label>
-                    &nbsp;
-                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{width: "400px"}}
-                           type="text"
-                           placeholder=""
-                           value={wallet_2}
-                           onChange={(event) => this.setState({ wallet_2: event.target.value })}
-                    />
-                    <br />
-                    <br />
-
-                    <label className="text-yellow-600">Claim #3</label>
-                    &nbsp;
-                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
-                        type="text"
-                        placeholder=""
-                        value={claim_3}
-                        onChange={(event) => this.setState({ claim_3: event.target.value })}
-                    />
-                    <br />
-                    <label>USDC Amount</label>
-                    &nbsp;
-                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
-                        type="text"
-                        placeholder="0"
-                        value={qty_3}
-                        onChange={(event) => this.setState({ qty_3: event.target.value })}
-                    />
-                    <br />
-                    <label>Wallet</label>
-                    &nbsp;
-                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{width: "400px"}}
-                           type="text"
-                           placeholder=""
-                           value={wallet_3}
-                           onChange={(event) => this.setState({ wallet_3: event.target.value })}
-                    />
-                    <br />
-                    <br />
-
-                    <label className="text-yellow-600">Claim #4</label>
-                    &nbsp;
-                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
-                        type="text"
-                        placeholder=""
-                        value={claim_4}
-                        onChange={(event) => this.setState({ claim_4: event.target.value })}
-                    />
-                    <br />
-                    <label>USDC Amount</label>
-                    &nbsp;
-                    <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
-                        type="text"
-                        placeholder="0"
-                        value={qty_4}
-                        onChange={(event) => this.setState({ qty_4: event.target.value })}
-                    />
-                    <br />
-                    <label>Wallet</label>
-                    &nbsp;
-                    <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{width: "400px"}}
-                           type="text"
-                           placeholder=""
-                           value={wallet_4}
-                           onChange={(event) => this.setState({ wallet_4: event.target.value })}
-                    />
-                    <br />
-                    <br />
-
-                    {!!rootHash ? <>
-                        <span style={{ color: "red" }}>Success</span>
+                        {/* <label className="text-yellow-600">Oracle #1</label>
+                        &nbsp;
+                        <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
+                            type="text"
+                            placeholder=""
+                            value={oracle_1}
+                            onChange={(event) => this.setState({ oracle_1: event.target.value })}
+                        />
                         <br />
-                        {rootHash}
-                    </> : null}
+                        <label className="text-yellow-600">Oracle #2</label>
+                        &nbsp;
+                        <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
+                            type="text"
+                            placeholder=""
+                            value={oracle_2}
+                            onChange={(event) => this.setState({ oracle_2: event.target.value })}
+                        />
+                        <br />
+                        <label className="text-yellow-600">Oracle #3</label>
+                        &nbsp;
+                        <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
+                            type="text"
+                            placeholder=""
+                            value={oracle_3}
+                            onChange={(event) => this.setState({ oracle_3: event.target.value })}
+                        /> */}
 
-                    <br />
-                    <br />
-                    <button
-                        className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
-                        type="submit" onClick={() => this.connect()}>
-                        Connect Wallet
-                    </button>
-                    &nbsp;
-                    <button
-                        className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
-                        type="submit" onClick={() => this.write()}>
-                        Write
-                    </button>
-                </div>
-            </div>
-            <br />
-        </div>;
+                        <div className='border border-white my-2'></div>
+                        <br />
+
+                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
+                            Enscribe Witnesses
+                        </h1>
+
+                        <div className='rounded-md bg-black text-gray px-8 py-4 flex flex-col items-start m-3'>
+                            <p className='text-l pb-2 font-bold'>{`Please Input Witness Addresses`}</p>
+                            <p className='text-l py-2 '>First Address</p>
+                            <Form styling="w-full h-8" field={oracle_1} onChangeFunc={(event) => this.setState({ oracle_1: event.target.value })} placeholder={"Address Here"} />
+                            <p className='text-l py-2 '>Second Address</p>
+                            <Form styling="w-full h-8 pb-1" field={oracle_2} onChangeFunc={(event) => this.setState({ oracle_2: event.target.value })} placeholder={"Address Here"} />
+                            <p className='text-l py-2 '>Third Address</p>
+                            <Form styling="w-full h-8 " field={oracle_3} onChangeFunc={(event) => this.setState({ oracle_3: event.target.value })} placeholder={"Address Here"} />
+                        </div>
+
+                        <div className='border border-white'></div>
+                        <br />
+
+                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
+                            Enscribe Will Items
+                        </h1>
+
+                        <Claim itemNo={1}
+                            field1={claim_1} field2={qty_1} field3={wallet_1}
+                            onChange1={(event) => this.setState({ claim_1: event.target.value })}
+                            onChange2={(event) => this.setState({ qty_1: event.target.value })}
+                            onChange3={(event) => this.setState({ wallet_1: event.target.value })}
+                        />
+
+                        <Claim itemNo={2}
+                            field1={claim_2} field2={qty_2} field3={wallet_2}
+                            onChange1={(event) => this.setState({ claim_2: event.target.value })}
+                            onChange2={(event) => this.setState({ qty_2: event.target.value })}
+                            onChange3={(event) => this.setState({ wallet_2: event.target.value })}
+                        />
+
+                        <Claim itemNo={3}
+                            field1={claim_3} field2={qty_3} field3={wallet_3}
+                            onChange1={(event) => this.setState({ claim_3: event.target.value })}
+                            onChange2={(event) => this.setState({ qty_3: event.target.value })}
+                            onChange3={(event) => this.setState({ wallet_3: event.target.value })}
+                        />
+
+                        <Claim itemNo={4}
+                            field1={claim_4} field2={qty_4} field3={wallet_4}
+                            onChange1={(event) => this.setState({ claim_4: event.target.value })}
+                            onChange2={(event) => this.setState({ qty_4: event.target.value })}
+                            onChange3={(event) => this.setState({ wallet_4: event.target.value })}
+                        />
+
+
+                        {/* 
+                        <label className="text-yellow-600">Claim #1</label>
+                        &nbsp;
+                        <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
+                            type="text"
+                            placeholder=""
+                            value={claim_1}
+                            onChange={(event) => this.setState({ claim_1: event.target.value })}
+                        />
+                        <br />
+                        <label>USDC Amount</label>
+                        &nbsp;
+                        <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
+                            type="text"
+                            placeholder="0"
+                            value={qty_1}
+                            onChange={(event) => this.setState({ qty_1: event.target.value })}
+                        />
+                        <br />
+                        <label>Wallet</label>
+                        &nbsp;
+                        <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "400px" }}
+                            type="text"
+                            placeholder=""
+                            value={wallet_1}
+                            onChange={(event) => this.setState({ wallet_1: event.target.value })}
+                        />
+                        <br />
+                        <br />
+
+                        <label className="text-yellow-600">Claim #2</label>
+                        &nbsp;
+                        <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
+                            type="text"
+                            placeholder=""
+                            value={claim_2}
+                            onChange={(event) => this.setState({ claim_2: event.target.value })}
+                        />
+                        <br />
+                        <label>USDC Amount</label>
+                        &nbsp;
+                        <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
+                            type="text"
+                            placeholder="0"
+                            value={qty_2}
+                            onChange={(event) => this.setState({ qty_2: event.target.value })}
+                        />
+                        <br />
+                        <label>Wallet</label>
+                        &nbsp;
+                        <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "400px" }}
+                            type="text"
+                            placeholder=""
+                            value={wallet_2}
+                            onChange={(event) => this.setState({ wallet_2: event.target.value })}
+                        />
+                        <br />
+                        <br />
+
+                        <label className="text-yellow-600">Claim #3</label>
+                        &nbsp;
+                        <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
+                            type="text"
+                            placeholder=""
+                            value={claim_3}
+                            onChange={(event) => this.setState({ claim_3: event.target.value })}
+                        />
+                        <br />
+                        <label>USDC Amount</label>
+                        &nbsp;
+                        <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
+                            type="text"
+                            placeholder="0"
+                            value={qty_3}
+                            onChange={(event) => this.setState({ qty_3: event.target.value })}
+                        />
+                        <br />
+                        <label>Wallet</label>
+                        &nbsp;
+                        <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "400px" }}
+                            type="text"
+                            placeholder=""
+                            value={wallet_3}
+                            onChange={(event) => this.setState({ wallet_3: event.target.value })}
+                        />
+                        <br />
+                        <br />
+
+                        <label className="text-yellow-600">Claim #4</label>
+                        &nbsp;
+                        <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "600px" }}
+                            type="text"
+                            placeholder=""
+                            value={claim_4}
+                            onChange={(event) => this.setState({ claim_4: event.target.value })}
+                        />
+                        <br />
+                        <label>USDC Amount</label>
+                        &nbsp;
+                        <input className='border shadow-xl border-blue-500/10 text-center text-black' style={{ width: "100px" }}
+                            type="text"
+                            placeholder="0"
+                            value={qty_4}
+                            onChange={(event) => this.setState({ qty_4: event.target.value })}
+                        />
+                        <br />
+                        <label>Wallet</label>
+                        &nbsp;
+                        <input className='text-black border shadow-xl border-blue-500/10 text-center' style={{ width: "400px" }}
+                            type="text"
+                            placeholder=""
+                            value={wallet_4}
+                            onChange={(event) => this.setState({ wallet_4: event.target.value })}
+                        />
+                        <br />
+                        <br /> */}
+
+                        {!!rootHash ? <>
+                            <span style={{ color: "red" }}>Success</span>
+                            <br />
+                            {rootHash}
+                        </> : null}
+
+                        <br />
+                        <br />
+                        <button
+                            className="px-5 py-2.5 mt-2 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
+                            type="submit" onClick={() => this.connect()}>
+                            Connect Wallet
+                        </button>
+                        &nbsp;
+                        <button
+                            className="px-5 py-2.5 mt-2 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
+                            type="submit" onClick={() => this.write()}>
+                            Write
+                        </button>
+                    </div>
+                </div >
+                <br />
+            </div >
+        );
     }
 }
 
