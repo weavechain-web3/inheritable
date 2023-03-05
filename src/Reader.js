@@ -515,7 +515,7 @@ class Reader extends Component {
                                 className="px-5 py-2.5 mx-2 mt-8 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
                                 type="submit" onClick={() => this.check()}>
 
-                                Verify a Claim
+                                Verify Claim
                             </button>
                             &nbsp;
                             {SHOW_WITHDRAW ? <button
