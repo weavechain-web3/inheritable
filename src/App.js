@@ -3,6 +3,8 @@ import Writer from './Writer';
 import Reader from './Reader';
 import Oracle from './Oracle';
 import logo from './logo.svg';
+import logo2 from './logo2.svg';
+import base from './base.svg'
 import inherilogo from './resources/inheri-logo.svg';
 import verifySvg from "./resources/verify.svg";
 import signSvg from "./resources/ri_quill-pen-fill.svg";
@@ -143,10 +145,19 @@ class App extends Component {
                             : <this.SidebarReader />}
                 </div>
 
-                <div className='h-1/3 flex flex-col justify-end items-center'>
+
+
+                <div className='flex flex-col justify-end items-start pl-8'>
                     <div className='flex flex-nowrap items-center'>
+                        <span className='text-white font-light text-m'>Anchored on</span>
+                        <img src={base} className="h-24 w-24 ml-2" onClick={() => this.switchView()} alt="logo" />
+                        
+                    </div>
+                    <p href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} className="text-sm pl-4 pb-8 font-display underline text-indigo-300 hover:text-indigo-400 hover:ease-in-out hover:transition hover:duration-700">Smart Contract: Writing Hashes of the Will</p>
+                    <p href={"https://goerli.basescan.org/address/0xc2CA9937fCbd04e214965fFfD3526045aba337CC"} className="text-sm pl-4 pb-8 font-display underline text-indigo-300 hover:text-indigo-400 hover:ease-in-out hover:transition hover:duration-700">Smart Contract: Oracle Signing</p>
+                    <div className='flex flex-nowrap items-center pb-8'>
                         <span className='text-white font-light text-m'>Powered by</span>
-                        <img src={logo} className="h-12 w-12 ml-2" onClick={() => this.switchView()} alt="logo" />
+                        <img src={logo2} className="h-10 w-32 ml-2" onClick={() => this.switchView()} alt="logo" />
                     </div>
                 </div>
             </div>
