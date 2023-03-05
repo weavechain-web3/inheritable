@@ -6,10 +6,9 @@ import { keccak512 } from 'js-sha3'
 import Inheritance_abi from "./Inheritance_abi.json";
 import WeaveHash_abi from "./WeaveHash_abi.json";
 
-const solanaWeb3 = require("@solana/web3.js");
+import CoinbaseWalletSDK from '@coinbase/wallet-sdk'
+import {coinbaseWallet} from "./Writer";
 const Buffer = require("buffer").Buffer
-
-const { ethereum } = window;
 
 const gasPrice = 1000; //saving tokens. It seems any gas price will work (for now) as the netowrk is not used
 
@@ -27,6 +26,11 @@ const CHAIN = {
     rpcUrls: ["https://goerli.base.org"],
     blockExplorerUrls: ["https://goerli.basescan.org/"],
 };
+
+const CHAIN_URL = "https://goerli.base.org";
+
+const ethereum = coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
+window.ethereum = ethereum;
 
 
 class Oracle extends Component {
@@ -55,9 +59,9 @@ class Oracle extends Component {
         }
     }
 
-    async getCurrentMetamaskAccount() {
+    async getCurrentWallet() {
         const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        return accounts[0];
+        return Web3.utils.toChecksumAddress(accounts[0].trim());
     }
 
     async status() {
@@ -80,13 +84,7 @@ class Oracle extends Component {
     }
 
     async connect() {
-        const permissions = await ethereum.request({
-            method: 'wallet_requestPermissions',
-            params: [{
-                eth_accounts: {},
-            }]
-        });
-        this.setState({ currentMetamaskAccount: await this.getCurrentMetamaskAccount() });
+        this.setState({ currentMetamaskAccount: await this.getCurrentWallet() });
 
         const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS);
         console.log(await contract.methods.Oracles(0).call())
@@ -103,7 +101,7 @@ class Oracle extends Component {
 
         const signature = await ethereum.request({
             method: 'personal_sign',
-            params: [account, msg]
+            params: [msg, account]
         });
 
         const vote = await contract.methods.vote(signature).send({ chainId: CHAIN_ID, from: account, gasPrice: gasPrice });
