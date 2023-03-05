@@ -58,8 +58,8 @@ class App extends Component {
                 </div>
                 <div className='h-1/3 flex flex-col justify-end items-end'>
                     <div className='flex flex-nowrap items-center'>
-                        <span className='text-white font-light text-xs'>Powered by    </span>
-                        <img src={logo} className="h-6 w-6 m-4 ml-1" alt="logo" />
+                        <span className='text-white font-light text-m'>Powered by    </span>
+                        <img src={logo} className="h-12 w-12 mr-12 ml-4" alt="logo" />
                     </div>
                 </div>
             </div>
