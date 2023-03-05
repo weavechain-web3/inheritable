@@ -34,7 +34,7 @@ class App extends Component {
     SidebarWriter() {
         return (
             <div className='text-white h-2/5 mt-10 text-md pl-8 flex flex-col justify-around'>
-                <div>
+                <div className='my-2'>
                     <div className='flex items-center justify-left'>
                         <img src={signSvg} className="w-5 h-5 mr-2" alt="logo" />
                         <a className='text-center ' >Enscribe Will Items</a>
@@ -42,7 +42,7 @@ class App extends Component {
                     <p className='font-light ml-7 text-zinc-500 text-xs'>Enter description, claim amount and beneficiary address</p>
                 </div>
 
-                <div>
+                <div className='my-2'>
                     <div className='flex items-center justify-left'>
                         <img src={signSvg} className="w-5 h-5 mr-2" alt="logo" />
                         <a className='text-center ' >Set Witnesses of Passing</a>
@@ -50,7 +50,7 @@ class App extends Component {
                     <p className='font-light ml-7 text-zinc-500 text-xs'>2 of 3 witnesses are required for proof of passing</p>
                 </div>
 
-                <div>
+                <div className='my-2'>
                     <div className='flex items-center justify-left'>
                         <img src={signSvg} className="w-5 h-5 mr-2" alt="logo" />
                         <a className='text-center ' >Sign Will</a>
@@ -74,9 +74,9 @@ class App extends Component {
     SidebarOracle() {
         return (
             <div className='text-white h-2/5 mt-10 text-md pl-8 flex flex-col justify-around'>
-                <div>
+                <div className='my-2'>
                     <div className='flex items-center justify-left'>
-                        <img src={signSvg} className="w-5 h-5 mr-2" alt="logo" />
+                        <img src={witnessSvg} className="w-5 h-5 mr-2" alt="logo" />
                         <a className='text-center ' >Sign as Witness</a>
                     </div>
                     <p className='font-light ml-7 text-zinc-500 text-xs'>Bear witness for proof of passing</p>
@@ -98,28 +98,22 @@ class App extends Component {
     SidebarReader() {
         return (
             <div className='text-white h-2/5 mt-10 text-md pl-8 flex flex-col justify-around'>
-                <div>
-                    <div className='flex items-center justify-left'>
+                <div className='my-2'>
+                    <div className='flex items-center justify-left '>
                         <img src={signSvg} className="w-5 h-5 mr-2" alt="logo" />
-                        <a className='text-center ' >Enscribe Will Items</a>
+                        <a className='text-center '>View your Claim</a>
                     </div>
-                    <p className='font-light ml-7 text-zinc-500 text-xs'>NOT SURE WHAT GOES HERE</p>
+                    <p className='font-light ml-7 text-zinc-500 text-xs'>View will item of deceased addressed to you</p>
                 </div>
 
-                <div>
+                <div className='my-2'>
                     <div className='flex items-center justify-left'>
-                        <img src={signSvg} className="w-5 h-5 mr-2" alt="logo" />
-                        <a className='text-center ' >Set Witnesses of Passing</a>
+                        <img src={verifySvg} className="w-5 h-5 mr-2" alt="logo" />
+                        <a className='text-center ' >Verify Claim Integrity</a>
                     </div>
-                    <p className='font-light ml-7 text-zinc-500 text-xs'>2 of 3 witnesses are required for proof of passing</p>
+                    <p className='font-light ml-7 text-zinc-500 text-xs'>Verified that claim is untampered</p>
                 </div>
 
-                <div>
-                    <div className='flex items-center justify-left'>
-                        <img src={signSvg} className="w-5 h-5 mr-2" alt="logo" />
-                        <a className='text-center ' >Sign Will</a>
-                    </div>
-                </div>
 
 
                 {/* <div className='flex items-center justify-left hover:underline hover:text-white hover:cursor-pointer' onClick={() => this.setState({ screen: 1 })}>
@@ -139,24 +133,16 @@ class App extends Component {
 
 
     render() {
-        return <div className="font-inter bg-zinc-900 ">
-            <div className="fixed w-1/4 h-full">
-                <div className='flex justify-center '>
+        return <div className="font-serif bg-zinc-900 ">
+            <div className="fixed w-1/4 h-full flex flex-col justify-between">
+                <div><div className='flex justify-center '>
                     <img src={inherilogo} className="logo m-4 w-2/3 ml-2" alt="logo" />
                 </div>
-                {this.state.screen == 0 ? <this.SidebarWriter />
-                    : this.state.screen == 1 ? <this.SidebarOracle />
-                        : <this.SidebarReader />}
+                    {this.state.screen == 0 ? <this.SidebarWriter />
+                        : this.state.screen == 1 ? <this.SidebarOracle />
+                            : <this.SidebarReader />}
+                </div>
 
-                {/* <div className='flex items-center justify-left hover:underline hover:text-white hover:cursor-pointer' onClick={() => this.setState({ screen: 1 })}>
-                              <img src={witnessSvg} className="w-5 h-5 mr-2" alt="logo" />
-                              <p className='text-center'> Bear witness to passing </p>
-                          </div>
-      
-                          <div className='flex items-center justify-left hover:underline hover:text-white hover:cursor-pointer' onClick={() => this.setState({ screen: 2 })}>
-                              <img src={verifySvg} className="w-5 h-5 mr-2" alt="logo" />
-                              <p className='text-center'> Verify and release will </p>
-                          </div> */}
                 <div className='h-1/3 flex flex-col justify-end items-center'>
                     <div className='flex flex-nowrap items-center'>
                         <span className='text-white font-light text-m'>Powered by</span>
