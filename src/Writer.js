@@ -1,6 +1,7 @@
 import React, { Component, useEffect } from 'react';
 import './App.css';
 import Web3 from 'web3'
+import CoinbaseWalletSDK from '@coinbase/wallet-sdk'
 import WeaveHelper from "./weaveapi/helper";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import Claim from './components/claim';
@@ -9,6 +10,11 @@ import Form from './components/form';
 import Inheritance_abi from "./Inheritance_abi.json";
 import FiatTokenV1_abi from "./FiatTokenV1_abi.json";
 import SidebarWrapper from './components/sidebar-wrapper';
+
+export const coinbaseWallet = new CoinbaseWalletSDK({
+    appName: "Inheritable",
+    darkMode: true
+})
 
 const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
 //const sideChain = "http://localhost:18080/92f30f0b6be2732cb817c19839b0940c";
@@ -23,15 +29,16 @@ const table = "inheritance2";
 
 const CHAIN_ID = "0x14A33"; //base testnet
 const CONTRACT_ADDRESS = "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
+const CHAIN_URL = "https://goerli.base.org";
+
+const ethereum = coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
+window.ethereum = ethereum;
 
 const TOKEN_ADDRESS = "0xf26490E8bdFfa5EBE8625Bafa967560303D802E4";
 
 const DECIMALS = 6;
 
 const STORE_AMOUNTS = false;
-
-const { ethereum } = window;
-
 
 class Writer extends Component {
     constructor(props) {
@@ -90,7 +97,7 @@ class Writer extends Component {
         }
     }
 
-    async getCurrentMetamaskAccount() {
+    async getCurrentWallet() {
         const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
         return accounts[0];
     }
@@ -115,13 +122,7 @@ class Writer extends Component {
         const pub = this.state.publicKey;
         const pvk = this.state.privateKey;
 
-        const permissions = await ethereum.request({
-            method: 'wallet_requestPermissions',
-            params: [{
-                eth_accounts: {},
-            }]
-        });
-        const account = await this.getCurrentMetamaskAccount();
+        const account = await this.getCurrentWallet();
         this.setState({ currentMetamaskAccount: account });
 
         //This message must match what's hashed on server side, changing it here should trigger changing it also in the node
@@ -131,7 +132,7 @@ class Writer extends Component {
 
         const sig = await ethereum.request({
             method: 'personal_sign',
-            params: [account, msg]
+            params: [msg, account]
         });
 
         const credentials = {
