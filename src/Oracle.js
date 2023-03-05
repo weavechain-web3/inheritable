@@ -17,15 +17,15 @@ const CHAIN_ID = "0x14A33"; //base testnet
 const CONTRACT_ADDRESS = "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
 
 const CHAIN = {
-	chainId: CHAIN_ID,
-	chainName: "Base Goerli Testnet",
-	nativeCurrency: {
-		name: "ETH",
-		symbol: "ETH",
-		decimals: 18,
-	},
-	rpcUrls: ["https://goerli.base.org"],
-	blockExplorerUrls: ["https://goerli.basescan.org/"],
+    chainId: CHAIN_ID,
+    chainName: "Base Goerli Testnet",
+    nativeCurrency: {
+        name: "ETH",
+        symbol: "ETH",
+        decimals: 18,
+    },
+    rpcUrls: ["https://goerli.base.org"],
+    blockExplorerUrls: ["https://goerli.basescan.org/"],
 };
 
 
@@ -48,7 +48,7 @@ class Oracle extends Component {
         });
     }
 
-   async loadWeb3() {
+    async loadWeb3() {
         if (window.ethereum) {
             window.web3 = new Web3(window.ethereum);
             window.ethereum.enable();
@@ -114,30 +114,33 @@ class Oracle extends Component {
 
 
     render() {
-        return <section className="bg-zinc-800 min-h-screen">
+        return <section className="text-gray-300 bg-black min-h-screen pb-32 font-serif">
             <header className="items-center justify-between pt-12">
-                <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
-                    Oracle
+                <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold text-gray-300">
+                    Oracle View
                 </h1>
-                <h1 className="mx-auto text-center m-2 text-2xl font-medium font-mono text-gray-300 underline decoration-gray-500">Oracle View</h1>
             </header>
 
             <div class="text-sm items-center text-center mt-6">
                 <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm border shadow-xl border-black">
 
-                    <p class="transition ">
-                        <span className="text-yellow-600">Connected MetaMask address: </span> <span className="text-gray-800"> {this.state.currentMetamaskAccount}</span>
+                    <div className="flex justify-between">
+                        <p className="text-white font-bold text-left">Connected MetaMask address: </p><span className="text-gray-300">{this.state.currentMetamaskAccount}</span>
+                    </div>
+
+                    <div class="transition border border-white p-6 my-6">
+                        <label className="mx-auto text-center pb-2 text-2xl font-extrabold text-gray-300">Oracle Count:</label> <span className="mx-auto text-center pb-2 text-2xl font-extrabold text-yellow-600"> {this.state.signed}/{this.state.oraclesCount}</span>
                         <br />
                         <br />
                         <br />
-                        <label className="text-zinc-500">Oracles Count:</label> <span className="text-yellow-600">{this.state.signed} / {this.state.oraclesCount}</span>
+                        <label className="mx-auto text-center pb-2 text-2xl font-extrabold text-gray-300">Will Unlocked:</label> <span className="mx-auto text-center pb-2 text-2xl font-extrabold text-yellow-600">{this.state.unlocked ? "Yes" : "No"}</span>
                         <br />
-                        <label className="text-zinc-500">Will Unlocked:</label> <span className="text-yellow-600">{this.state.unlocked ? "Yes" : "No"}</span>
                         <br />
-                        <button className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow" type="submit" onClick={() => this.connect()}>Connect Wallet</button>
+                        <br />
+                        <button className="px-5 py-2.5 mt-2 text-lg font-semibold text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow mx-2" type="submit" onClick={() => this.connect()}>Connect Wallet</button>
                         &nbsp;
-                        <button className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow" type="submit" onClick={() => this.vote()}>It's Time</button>
-                    </p>
+                        <button className="px-5 py-2.5 mt-2 text-lg font-semibold text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow mx-2" type="submit" onClick={() => this.vote()}>It's Time ...</button>
+                    </div>
                 </div>
             </div>
 

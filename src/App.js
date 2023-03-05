@@ -35,7 +35,7 @@ class App extends Component {
     }
 
     render() {
-        return <div className="font-inter bg-zinc-900 ">
+        return <div className="font-serif bg-zinc-900 ">
             <div className="fixed w-1/4 h-full">
                 <div className='flex justify-center '>
                     <img src={inherilogo} className="logo m-4 w-2/3 ml-2" alt="logo" />
@@ -63,7 +63,7 @@ class App extends Component {
                     </div>
                 </div>
             </div>
-            <div className="font-inter flex ">
+            <div className=" flex ">
                 <div className='w-1/4 bg-zinc-900 flex flex-col'>
                 </div>
                 <div className='w-3/4 bg-black'>
