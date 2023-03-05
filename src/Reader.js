@@ -9,7 +9,9 @@ import Inheritance_abi from "./Inheritance_abi.json";
 import mermaid from "mermaid";
 import Form from './components/form';
 
-const solanaWeb3 = require("@solana/web3.js");
+import CoinbaseWalletSDK from '@coinbase/wallet-sdk'
+import {coinbaseWallet} from "./Writer";
+
 const Buffer = require("buffer").Buffer
 
 const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
@@ -35,8 +37,6 @@ const CONTRACT_ADDRESS = "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
 
 const SHOW_WITHDRAW = false;
 
-const { ethereum } = window;
-
 const CHAIN = {
     chainId: CHAIN_ID,
     chainName: "Base Goerli Testnet",
@@ -48,6 +48,11 @@ const CHAIN = {
     rpcUrls: ["https://goerli.base.org"],
     blockExplorerUrls: ["https://goerli.basescan.org/"],
 };
+
+const CHAIN_URL = "https://goerli.base.org";
+
+const ethereum = coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
+window.ethereum = ethereum;
 
 
 class Reader extends Component {
@@ -101,19 +106,13 @@ class Reader extends Component {
         }
     }
 
-    async getCurrentMetamaskAccount() {
+    async getCurrentWallet() {
         const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        return accounts[0];
+        return Web3.utils.toChecksumAddress(accounts[0].trim());
     }
 
     async connect() {
-        const permissions = await ethereum.request({
-            method: 'wallet_requestPermissions',
-            params: [{
-                eth_accounts: {},
-            }]
-        });
-        const account = await this.getCurrentMetamaskAccount();
+        const account = await this.getCurrentWallet();
 
         this.setState({ currentMetamaskAccount: account });
 
@@ -128,9 +127,10 @@ class Reader extends Component {
             "\n\nWallet: " + account +
             "\nKey: " + pub;
 
+        console.log(account)
         const sig = await ethereum.request({
             method: 'personal_sign',
-            params: [account, msg]
+            params: [msg, account]
         });
 
         const credentials = {
@@ -369,7 +369,7 @@ class Reader extends Component {
     }
 
     async withdraw() {
-        const account = await this.getCurrentMetamaskAccount();
+        const account = await this.getCurrentWallet();
         const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS, { from: account });
 
         const res = await contract.methods.withdraw().send({ from: account, gasPrice: gasPrice });
