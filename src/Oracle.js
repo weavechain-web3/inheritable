@@ -114,7 +114,7 @@ class Oracle extends Component {
 
 
     render() {
-        return <section className="text-gray-300 bg-black min-h-screen pb-32 font-serif">
+        return <section className="text-gray-300 bg-black min-h-screen pb-32 font-inter">
             <header className="items-center justify-between pt-12">
                 <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold text-gray-300">
                     Oracle View
@@ -125,7 +125,8 @@ class Oracle extends Component {
                 <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm border shadow-xl border-black">
 
                     <div className="flex justify-between">
-                        <p className="text-white font-bold text-left">Connected MetaMask address: </p><span className="text-gray-300">{this.state.currentMetamaskAccount}</span>
+                        <p className="text-zinc-500 font-bold text-left">Connected Address: </p>
+                        <span className="text-zinc-300">{this.state.currentMetamaskAccount}</span>
                     </div>
 
                     <div class="transition border border-white p-6 my-6">
