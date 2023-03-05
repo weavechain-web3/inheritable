@@ -137,9 +137,10 @@ class App extends Component {
     render() {
         return <div className="font-serif bg-zinc-900 ">
             <div className="fixed w-1/4 h-full flex flex-col justify-between">
-                <div><div className='flex justify-center '>
-                    <img src={inherilogo} className="logo m-4 w-2/3 ml-2" alt="logo" />
-                </div>
+                <div className='max-h-2/5'>
+                    <div className='flex justify-center '>
+                        <img src={inherilogo} className="logo m-4 w-2/3 ml-2" alt="logo" />
+                    </div>
                     {this.state.screen == 0 ? <this.SidebarWriter />
                         : this.state.screen == 1 ? <this.SidebarOracle />
                             : <this.SidebarReader />}
@@ -147,18 +148,22 @@ class App extends Component {
 
 
 
-                <div className='flex flex-col justify-end items-start pl-8'>
-                    <div className='flex flex-nowrap items-center'>
-                        <span className='text-white font-light text-m'>Anchored on</span>
-                        <img src={base} className="h-24 w-24 ml-2" onClick={() => this.switchView()} alt="logo" />
-                        
+                <div className='max-h-2/5 flex flex-col justify-end items-center'>
+
+                    <div className='flex flex-col items-center text-zinc-300 border-2 rounded p-1 m-2'>
+                        <p className='font-sm pb-2 text-md'>Smart Contracts deployed on Base</p>
+                        <a href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Writing Hashes of the Will</a>
+                        <a href={"https://goerli.basescan.org/address/0xc2CA9937fCbd04e214965fFfD3526045aba337CC"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Oracle Signing</a>
                     </div>
-                    <p href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} className="text-sm pl-4 pb-8 font-display underline text-indigo-300 hover:text-indigo-400 hover:ease-in-out hover:transition hover:duration-700">Smart Contract: Writing Hashes of the Will</p>
-                    <p href={"https://goerli.basescan.org/address/0xc2CA9937fCbd04e214965fFfD3526045aba337CC"} className="text-sm pl-4 pb-8 font-display underline text-indigo-300 hover:text-indigo-400 hover:ease-in-out hover:transition hover:duration-700">Smart Contract: Oracle Signing</p>
-                    <div className='flex flex-nowrap items-center pb-8'>
+                    <div className='flex flex-nowrap items-center m-1'>
+                        <span className='text-white font-light text-m'>Anchored on</span>
+                        <img src={base} className="h-15 w-24 ml-2" onClick={() => this.switchView()} alt="logo" />
+                    </div>
+                    <div className='flex flex-nowrap items-center m-1'>
                         <span className='text-white font-light text-m'>Powered by</span>
                         <img src={logo2} className="h-10 w-32 ml-2" onClick={() => this.switchView()} alt="logo" />
                     </div>
+
                 </div>
             </div>
 

@@ -338,7 +338,7 @@ class Writer extends Component {
                         <div className='border border-white my-4'></div>
                         <br />
 
-                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
+                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold text-gray-300">
                             Enscribe Will Items
                         </h1>
 
@@ -510,7 +510,7 @@ class Writer extends Component {
                         <div className='border border-white'></div>
                         <br />
 
-                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
+                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold text-gray-300">
                             Enscribe Witnesses
                         </h1>
 
