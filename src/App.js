@@ -159,7 +159,12 @@ class App extends Component {
                         <span className='text-white font-light text-m'>Anchored on</span>
                         <img src={base} className="h-15 w-24 ml-2" onClick={() => this.switchView()} alt="logo" />
                     </div>
+
+                    <a href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target="_blank" className="text-sm pl-4 pb-8 font-display underline text-indigo-300 hover:text-indigo-400 hover:ease-in-out hover:transition hover:duration-700">Smart Contract: Writing Hashes of the Will</a>
+                    <a href={"https://goerli.basescan.org/address/0xc2CA9937fCbd04e214965fFfD3526045aba337CC"} target="_blank" className="text-sm pl-4 pb-8 font-display underline text-indigo-300 hover:text-indigo-400 hover:ease-in-out hover:transition hover:duration-700">Smart Contract: Oracle Signing</a>
+
                     <div className='flex flex-nowrap items-center m-1'>
+
                         <span className='text-white font-light text-m'>Powered by</span>
                         <img src={logo2} className="h-10 w-32 ml-2" onClick={() => this.switchView()} alt="logo" />
                     </div>
