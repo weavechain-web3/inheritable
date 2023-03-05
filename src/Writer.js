@@ -67,16 +67,16 @@ class Writer extends Component {
             oracle_3: "0xAd55981118506cEFB74086f11C76d1680A5bda3F",
             claim_1: "John Doe, son, with last 4 SSN digits 1234, 1 House in Palm Beach",
             qty_1: 100,
-            wallet_1: "0x000012345",
+            wallet_1: "0x4AC8f386A76fD64B572619019314715Ad1C2de70",
             claim_2: "Jane Doe, daughter, with last 4 SSN digits 5678, Fiat USD",
             qty_2: 200,
-            wallet_2: "0x95F453718C4f8b73d6C7CCc9Df1ad4bdF40286A6",
+            wallet_2: "0x72F97C6108378656a99Fcd4eD58d944E91d74a1b",
             claim_3: "George Doe, nephew, with last 4 SSN digits 4567, Fiat USD",
             qty_3: 300,
-            wallet_3: "0x1bC466cB75a831eB10E00bC67f0Fa82d3Df1b95D",
+            wallet_3: "0xAd55981118506cEFB74086f11C76d1680A5bda3F",
             claim_4: "Mary Doe, niece, with last 4 SSN digits 7654, Fiat USD",
             qty_4: 400,
-            wallet_4: "0x726a746A5020d363E257cB181bECb833e07d77Ad",
+            wallet_4: "0x6575be9b0D1C8c9c611078aCd6f0cED2586053ef",
         };
 
         this.loadWeb3().then(async () => {
@@ -290,15 +290,15 @@ class Writer extends Component {
         } = this.state;
 
         return (
-            <div className="text-gray-300 bg-black min-h-screen pb-32">
+            <div className="text-gray-300 bg-black min-h-screen pb-32 font-serif">
                 <header className="items-center justify-between pt-12">
-                    <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
+                    <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold text-gray-300">
                         Write Will
                     </h1>
                 </header>
 
                 <div class="text-sm items-center text-center mt-6">
-                    <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm border shadow-xl border-blue-500/10">
+                    <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm">
                         <div className="flex justify-between">
                             <p className="text-white font-bold text-left">Connected MetaMask address: </p><span className="text-gray-300">{this.state.currentMetamaskAccount}</span>
                         </div>
@@ -336,24 +336,7 @@ class Writer extends Component {
                         <div className='border border-white my-2'></div>
                         <br />
 
-                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
-                            Enscribe Witnesses
-                        </h1>
-
-                        <div className='rounded-md bg-black text-gray px-8 py-4 flex flex-col items-start m-3'>
-                            <p className='text-l pb-2 font-bold'>{`Please Input Witness Addresses`}</p>
-                            <p className='text-l py-2 '>First Address</p>
-                            <Form styling="w-full h-8" field={oracle_1} onChangeFunc={(event) => this.setState({ oracle_1: event.target.value })} placeholder={"Address Here"} />
-                            <p className='text-l py-2 '>Second Address</p>
-                            <Form styling="w-full h-8 pb-1" field={oracle_2} onChangeFunc={(event) => this.setState({ oracle_2: event.target.value })} placeholder={"Address Here"} />
-                            <p className='text-l py-2 '>Third Address</p>
-                            <Form styling="w-full h-8 " field={oracle_3} onChangeFunc={(event) => this.setState({ oracle_3: event.target.value })} placeholder={"Address Here"} />
-                        </div>
-
-                        <div className='border border-white'></div>
-                        <br />
-
-                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
+                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold text-gray-300">
                             Enscribe Will Items
                         </h1>
 
@@ -384,6 +367,24 @@ class Writer extends Component {
                             onChange2={(event) => this.setState({ qty_4: event.target.value })}
                             onChange3={(event) => this.setState({ wallet_4: event.target.value })}
                         />
+
+
+                        <div className='border border-white'></div>
+                        <br />
+
+                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold text-gray-300">
+                            Enscribe Witnesses
+                        </h1>
+
+                        <div className='rounded-md bg-black text-gray px-8 py-4 flex flex-col items-start m-3'>
+                            <p className='text-l pb-2 font-bold'>{`Please Input Witness Addresses`}</p>
+                            <p className='text-l py-2 '>First Address</p>
+                            <Form styling="w-full h-8" field={oracle_1} onChangeFunc={(event) => this.setState({ oracle_1: event.target.value })} placeholder={"Address Here"} />
+                            <p className='text-l py-2 '>Second Address</p>
+                            <Form styling="w-full h-8 pb-1" field={oracle_2} onChangeFunc={(event) => this.setState({ oracle_2: event.target.value })} placeholder={"Address Here"} />
+                            <p className='text-l py-2 '>Third Address</p>
+                            <Form styling="w-full h-8 " field={oracle_3} onChangeFunc={(event) => this.setState({ oracle_3: event.target.value })} placeholder={"Address Here"} />
+                        </div>
 
 
                         {/* 
@@ -512,13 +513,13 @@ class Writer extends Component {
                         <br />
                         <br />
                         <button
-                            className="px-5 py-2.5 mt-2 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
+                            className="mx-2 px-5 py-2.5 mt-2 text-lg font-semibold text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
                             type="submit" onClick={() => this.connect()}>
                             Connect Wallet
                         </button>
                         &nbsp;
                         <button
-                            className="px-5 py-2.5 mt-2 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
+                            className="mx-2 px-5 py-2.5 mt-2 text-lg font-semibold text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
                             type="submit" onClick={() => this.write()}>
                             Write
                         </button>

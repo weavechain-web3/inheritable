@@ -392,12 +392,12 @@ class Reader extends Component {
             }, 1);
         }
 
-        return <section className="bg-zinc-800 min-h-screen pb-16">
+        return <section className="bg-zinc-800 min-h-screen pb-16 font-serif">
             <header className="items-center justify-between pt-12">
-                <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
+                <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold text-gray-300">
                     Checking a Claim
                 </h1>
-                <h1 className="mx-auto text-center m-2 text-2xl font-medium font-mono text-gray-300 underline decoration-gray-500">Reader View</h1>
+                <h1 className="mx-auto text-center m-2 text-2xl font-medium text-gray-300 underline decoration-gray-500">Reader View</h1>
             </header>
 
             <div class="text-sm items-center text-center mt-6">
