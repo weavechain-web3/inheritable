@@ -212,7 +212,7 @@ class Writer extends Component {
             });
             console.log(approveRes);
 
-            const lockRes = await contract.methods.lock(wallets, amounts).send({chainId: CHAIN_ID, gasPrice: gasPrice});
+            const lockRes = await contract.methods.lock(wallets, amounts).send({ chainId: CHAIN_ID, gasPrice: gasPrice });
             console.log(lockRes)
         }
 
@@ -292,7 +292,7 @@ class Writer extends Component {
         return (
             <div className="text-gray-300 bg-black min-h-screen pb-32">
                 <header className="items-center justify-between pt-12">
-                    <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold font-mono text-gray-300">
+                    <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold text-gray-300">
                         Write Will
                     </h1>
                 </header>
@@ -333,24 +333,7 @@ class Writer extends Component {
                             onChange={(event) => this.setState({ oracle_3: event.target.value })}
                         /> */}
 
-                        <div className='border border-white my-2'></div>
-                        <br />
-
-                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
-                            Enscribe Witnesses
-                        </h1>
-
-                        <div className='rounded-md bg-black text-gray px-8 py-4 flex flex-col items-start m-3'>
-                            <p className='text-l pb-2 font-bold'>{`Please Input Witness Addresses`}</p>
-                            <p className='text-l py-2 '>First Address</p>
-                            <Form styling="w-full h-8" field={oracle_1} onChangeFunc={(event) => this.setState({ oracle_1: event.target.value })} placeholder={"Address Here"} />
-                            <p className='text-l py-2 '>Second Address</p>
-                            <Form styling="w-full h-8 pb-1" field={oracle_2} onChangeFunc={(event) => this.setState({ oracle_2: event.target.value })} placeholder={"Address Here"} />
-                            <p className='text-l py-2 '>Third Address</p>
-                            <Form styling="w-full h-8 " field={oracle_3} onChangeFunc={(event) => this.setState({ oracle_3: event.target.value })} placeholder={"Address Here"} />
-                        </div>
-
-                        <div className='border border-white'></div>
+                        <div className='border border-white my-4'></div>
                         <br />
 
                         <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
@@ -503,25 +486,40 @@ class Writer extends Component {
                         <br />
                         <br /> */}
 
+
+                        <div className='border border-white'></div>
+                        <br />
+
+                        <h1 className="mx-auto text-center pb-2 text-3xl font-extrabold font-mono text-gray-300">
+                            Enscribe Witnesses
+                        </h1>
+
+                        <div className='rounded-md bg-black text-gray px-8 py-4 flex flex-col items-start m-3'>
+                            <p className='text-l pb-2 font-bold'>{`Please Input Witness Addresses`}</p>
+                            <p className='text-l py-2 '>First Address</p>
+                            <Form styling="w-full h-8" field={oracle_1} onChangeFunc={(event) => this.setState({ oracle_1: event.target.value })} placeholder={"Address Here"} />
+                            <p className='text-l py-2 '>Second Address</p>
+                            <Form styling="w-full h-8 pb-1" field={oracle_2} onChangeFunc={(event) => this.setState({ oracle_2: event.target.value })} placeholder={"Address Here"} />
+                            <p className='text-l py-2 '>Third Address</p>
+                            <Form styling="w-full h-8 " field={oracle_3} onChangeFunc={(event) => this.setState({ oracle_3: event.target.value })} placeholder={"Address Here"} />
+                        </div>
+
+                        <button
+                            className="px-5 py-2.5 mx-2 mt-8 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
+                            type="submit" onClick={() => this.connect()}>
+                            Connect Wallet
+                        </button>
+                        <button
+                            className="px-5 py-2.5 mx-2 mt-2 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
+                            type="submit" onClick={() => this.write()}>
+                            Write
+                        </button>
+
                         {!!rootHash ? <>
                             <span style={{ color: "red" }}>Success</span>
                             <br />
                             {rootHash}
                         </> : null}
-
-                        <br />
-                        <br />
-                        <button
-                            className="px-5 py-2.5 mt-2 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
-                            type="submit" onClick={() => this.connect()}>
-                            Connect Wallet
-                        </button>
-                        &nbsp;
-                        <button
-                            className="px-5 py-2.5 mt-2 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
-                            type="submit" onClick={() => this.write()}>
-                            Write
-                        </button>
                     </div>
                 </div >
                 <br />

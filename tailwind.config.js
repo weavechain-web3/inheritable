@@ -7,7 +7,7 @@ module.exports = {
     extend:
     {
       fontFamily: {
-        'inter': ['Inter']
+        'inter': ['Hahmlet']
       },
     },
   },
