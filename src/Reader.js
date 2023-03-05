@@ -7,6 +7,7 @@ import { binary_to_base58, base58_to_binary } from 'base58-js'
 import WeaveHash_abi from "./WeaveHash_abi.json";
 import Inheritance_abi from "./Inheritance_abi.json";
 import mermaid from "mermaid";
+import Form from './components/form';
 
 const solanaWeb3 = require("@solana/web3.js");
 const Buffer = require("buffer").Buffer
@@ -37,15 +38,15 @@ const SHOW_WITHDRAW = false;
 const { ethereum } = window;
 
 const CHAIN = {
-	chainId: CHAIN_ID,
-	chainName: "Base Goerli Testnet",
-	nativeCurrency: {
-		name: "ETH",
-		symbol: "ETH",
-		decimals: 18,
-	},
-	rpcUrls: ["https://goerli.base.org"],
-	blockExplorerUrls: ["https://goerli.basescan.org/"],
+    chainId: CHAIN_ID,
+    chainName: "Base Goerli Testnet",
+    nativeCurrency: {
+        name: "ETH",
+        symbol: "ETH",
+        decimals: 18,
+    },
+    rpcUrls: ["https://goerli.base.org"],
+    blockExplorerUrls: ["https://goerli.basescan.org/"],
 };
 
 
@@ -198,7 +199,7 @@ class Reader extends Component {
 
         //2. read merkle tree from source
         const resMerkle = await nodeApi.merkleTree(session, data_collection, table,
-            new WeaveHelper.Filter(null, null, null, null, [ "claim", "amount" ]),
+            new WeaveHelper.Filter(null, null, null, null, ["claim", "amount"]),
             salt,
             digest,
             WeaveHelper.Options.READ_DEFAULT_NO_CHAIN
@@ -232,21 +233,21 @@ class Reader extends Component {
                 const tree = resMerkle.data.tree;
 
                 //3. get merkle root from smart contract
-				try {
-					await ethereum.request({
-						method: "wallet_switchEthereumChain",
-						params: [{ chainId: CHAIN_ID }],
-					});
-				} catch (switchError) {
-					try {
-						await ethereum.request({
-							method: "wallet_addEthereumChain",
-							params: [ CHAIN ],
-						});
-					} catch (error) {
-						console.debug(error);
-					}
-				}
+                try {
+                    await ethereum.request({
+                        method: "wallet_switchEthereumChain",
+                        params: [{ chainId: CHAIN_ID }],
+                    });
+                } catch (switchError) {
+                    try {
+                        await ethereum.request({
+                            method: "wallet_addEthereumChain",
+                            params: [CHAIN],
+                        });
+                    } catch (error) {
+                        console.debug(error);
+                    }
+                }
 
                 const res = await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
@@ -346,7 +347,7 @@ class Reader extends Component {
                     }
                 }
             }
-        } catch(error) {
+        } catch (error) {
             console.log(error);
             success = false;
             this.setState({
@@ -392,112 +393,118 @@ class Reader extends Component {
             }, 1);
         }
 
-        return <section className="bg-zinc-800 min-h-screen pb-16 font-serif">
-            <header className="items-center justify-between pt-12">
-                <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold text-gray-300">
-                    Checking a Claim
-                </h1>
-                <h1 className="mx-auto text-center m-2 text-2xl font-medium text-gray-300 underline decoration-gray-500">Reader View</h1>
-            </header>
+        return (
+            <section className="text-gray-300 bg-black min-h-screen pb-32">
+                <header className="items-center justify-between pt-12">
+                    <h1 className="mx-auto text-center pb-2 text-5xl font-extrabold text-gray-300">
+                        Check or Verify Claim
+                    </h1>
+                </header>
+                <div class="text-sm items-center text-center mt-6">
+                    <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm">
+                        <div className="flex justify-between">
+                            <p className="text-zinc-500 font-bold text-left">Connected Address: </p>
+                            <span className="text-zinc-300">{this.state.currentMetamaskAccount}</span>
+                        </div>
+                        <div className='flex justify-between'>
+                            <span className="text-zinc-500 font-bold text-left">Weavechain public key: </span>
+                            <span className="text-zinc-300">{this.state.publicKey}</span>
+                        </div>
+                        <br />
+                        <div className='flex justify-left'>
+                            <a className='text-zinc-500' href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract [{HASH_CONTRACT_ADDRESS}]</a>
+                        </div>
 
-            <div class="text-sm items-center text-center mt-6">
-                <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm border shadow-xl border-blue-500/10">
-
-                    <p class="transition ">
-                        <span className="text-yellow-600">Connected MetaMask address: </span> <span className="text-gray-300"> {this.state.currentMetamaskAccount}</span>
-                        <br />
-                        <br />
-                        <span className="text-teal-600">Weavechain public key: </span> <span className="text-gray-300">{this.state.publicKey}</span>
-                        <br />
-                        <span><a href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} target={"_blank"}>Smart Contract {HASH_CONTRACT_ADDRESS}</a></span>
-
-                        <br />
-                        <br />
-                        <span className="text-gray-300">___</span>
-                        <br />
-                        <br />
-                        <label className="text-yellow-600">Claim</label>
-                        &nbsp;
-                        <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
-                            type="text"
-                            placeholder=""
-                            value={claim}
-                            onChange={(event) => this.setState({ claim: event.target.value })}
-                        />
-                        <br />
-                        <label className="text-yellow-600">Amount</label>
-                        &nbsp;
-                        <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "100px" }}
-                            type="text"
-                            placeholder="0"
-                            value={qty}
-                            onChange={(event) => this.setState({ qty: event.target.value })}
-                        />
-                        <br />
-                        <br />
-                        <label className="text-yellow-600">Secret Salt</label>
-                        &nbsp;
-                        <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "100px" }}
-                            type="text"
-                            placeholder=""
-                            value={salt}
-                            onChange={(event) => this.setState({ salt: event.target.value })}
-                        />
-                        <br />
-                        <br />
-                        {message ? <>
-                            <span style={{ color: "green", whiteSpace: "pre-line" }}>{message}</span>
-                        </> : null}
-                        {success ? <>
-                            <span style={{ color: "red" }}>Success</span>
-                        </> : null}
-                        {error ? <>
-                            <span style={{ color: "red" }}>{error}</span>
-                        </> : null}
-
-                        <br />
+                        <div className='border border-white my-4'></div>
                         <br />
 
-                        {claimHash && claimHash.length > 0 ?
-                            <>
-                                <label className="text-yellow-600">Your Claim Hash: </label>
-                                <span className="text-gray-300">{claimHash}</span>
+                        <p class="transition ">
+                            <div className='rounded-md bg-black text-gray px-8 pt-4 flex flex-col items-start m-3'>
+                                <p className='text-l py-2 font-semibold'>Input Claim Description</p>
+                                <Form styling="w-full h-8" field={this.claim} onChangeFunc={(event) => this.setState({ claim: event.target.value })} placeholder={"description"} />
+                                <p className='text-l py-2 font-semibold'>Amount to Beneficiary</p>
+                                <Form styling="w-1/5 h-8 pb-1" field={this.qty} onChangeFunc={(event) => this.setState({ qty: event.target.value })} placeholder={"in USDC"} />
+                            </div>
+
+                            {/* <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
+                                type="text"
+                                placeholder=""
+                                value={claim}
+                                onChange={(event) => this.setState({ claim: event.target.value })}
+                            />
+                            <br />
+                            <label className="text-yellow-600">Amount</label>
+                            &nbsp;
+                            <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "100px" }}
+                                type="text"
+                                placeholder="0"
+                                value={qty}
+                                onChange={(event) => this.setState({ qty: event.target.value })}
+                            /> */}
+                            {/* <br />
+                            <br />
+                            <label className="text-yellow-600">Secret Salt</label>
+                            &nbsp;
+                            <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "100px" }}
+                                type="text"
+                                placeholder=""
+                                value={salt}
+                                onChange={(event) => this.setState({ salt: event.target.value })}
+                            />
+                            <br />
+                            <br /> */}
+                            {message ? <>
+                                <span className='text-white text-center font-sm whitespace-pre-line'>{message}</span>
                             </> : null}
-                        <div id="mermaid0" ref={this.mermaidRef} className="mermaid">{flowChart}</div>
+                            {success ? <>
+                                <span className='text-white text-center font-lg'>Success</span>
+                            </> : null}
+                            {error ? <>
+                                <span className='text-zinc-500 text-center'>{error}</span>
+                            </> : null}
 
-                        <button
-                            className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
-                            type="submit" onClick={() => this.connect()}>
 
-                            Connect Wallet
-                        </button>
-                        &nbsp;
-                        <button
-                            className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
-                            type="submit" onClick={() => this.readClaim()}>
+                            {claimHash && claimHash.length > 0 ?
+                                <div className="border-2 rounded-sm border-white m-4">
+                                    <label className="text-white font-lg">Your Claim Hash: </label>
+                                    <span className="text-white">{claimHash}</span>
+                                </div> : null}
+                            <div id="mermaid0" ref={this.mermaidRef} className="mermaid">{flowChart}</div>
 
-                            View Your Claim
-                        </button>
-                        &nbsp;
-                        <button
-                            className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
-                            type="submit" onClick={() => this.check()}>
+                            <button
+                                className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                                type="submit" onClick={() => this.connect()}>
 
-                            Verify Particular Claim
-                        </button>
-                        &nbsp;
-                        {SHOW_WITHDRAW ? <button
-                            className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
-                            type="submit" onClick={() => this.withdraw()}>
+                                Connect Wallet
+                            </button>
+                            &nbsp;
+                            <button
+                                className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                                type="submit" onClick={() => this.readClaim()}>
 
-                            Withdraw
-                        </button> : null}
-                    </p>
+                                View Your Claim
+                            </button>
+                            &nbsp;
+                            <button
+                                className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                                type="submit" onClick={() => this.check()}>
+
+                                Verify Particular Claim
+                            </button>
+                            &nbsp;
+                            {SHOW_WITHDRAW ? <button
+                                className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                                type="submit" onClick={() => this.withdraw()}>
+
+                                Withdraw
+                            </button> : null}
+                        </p>
+                    </div>
                 </div>
-            </div>
 
 
-        </section>
+            </section >
+        )
     }
 }
 
