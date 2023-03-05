@@ -83,7 +83,9 @@ class Reader extends Component {
             claimHash: "",
             flowChart: "",
             message: null,
-            error: null
+            error: null,
+            receivedClaim: null,
+            receivedQty: null
         };
 
         this.mermaidRef = React.createRef();
@@ -176,12 +178,16 @@ class Reader extends Component {
         const res = await nodeApi.read(session, data_collection, table, filter, WeaveHelper.Options.READ_DEFAULT_NO_CHAIN)
         console.log(res)
 
+
+
         if (res.data && res.data.length > 0) {
             //2. read the claim from source
             const item = res.data[0];
+            console.log("Hey!")
+            console.log(item)
             this.setState({
-                claim: item.claim,
-                qty: (item.amount + "").includes(".") ? item.amount : item.amount + ".0"
+                receivedClaim: item.claim,
+                receivedQty: (item.amount + "").includes(".") ? item.amount : item.amount + ".0"
             });
 
         }
@@ -383,7 +389,9 @@ class Reader extends Component {
             flowChart,
             claimHash,
             message,
-            error
+            error,
+            receivedClaim,
+            receivedQty
         } = this.state;
 
         if (flowChart && flowChart.length > 0) {
@@ -421,9 +429,9 @@ class Reader extends Component {
                         <p class="transition ">
                             <div className='rounded-md bg-black text-gray px-8 pt-4 flex flex-col items-start m-3'>
                                 <p className='text-l py-2 font-semibold'>Input Claim Description</p>
-                                <Form styling="w-full h-8" field={this.claim} onChangeFunc={(event) => this.setState({ claim: event.target.value })} placeholder={"description"} />
+                                <Form styling="w-full h-8" field={claim} onChangeFunc={(event) => this.setState({ claim: event.target.value })} placeholder={"description"} />
                                 <p className='text-l py-2 font-semibold'>Amount to Beneficiary</p>
-                                <Form styling="w-1/5 h-8 pb-1" field={this.qty} onChangeFunc={(event) => this.setState({ qty: event.target.value })} placeholder={"in USDC"} />
+                                <Form styling="w-1/5 h-8 pb-1" field={qty} onChangeFunc={(event) => this.setState({ qty: event.target.value })} placeholder={"in USDC"} />
                             </div>
 
                             {/* <input className='border shadow-xl border-blue-500/10 text-center' style={{ width: "600px" }}
@@ -453,43 +461,61 @@ class Reader extends Component {
                             />
                             <br />
                             <br /> */}
-                            {message ? <>
-                                <span className='text-white text-center font-sm whitespace-pre-line'>{message}</span>
-                            </> : null}
+
+                            {message ?
+                                <div className="border-1 rounded-sm border-zinc-700 m-4">
+                                    <div className='border border-white my-2'></div>
+                                    <span className='text-white text-center text-xs whitespace-pre-line'>{message}</span>
+                                </div>
+                                : null}
                             {success ? <>
-                                <span className='text-white text-center font-lg'>Success</span>
+                                <span className='text-white text-center text-lg font-bold'>CLAIM VERIFIED</span>
+
                             </> : null}
                             {error ? <>
-                                <span className='text-zinc-500 text-center'>{error}</span>
+                                <span className='text-red text-center'>{error}</span>
                             </> : null}
+
 
 
                             {claimHash && claimHash.length > 0 ?
-                                <div className="border-2 rounded-sm border-white m-4">
+                                <div>
+                                    <div className='border border-white my-2'></div>
                                     <label className="text-white font-lg">Your Claim Hash: </label>
                                     <span className="text-white">{claimHash}</span>
                                 </div> : null}
                             <div id="mermaid0" ref={this.mermaidRef} className="mermaid">{flowChart}</div>
 
+                            {receivedClaim != null
+                                ? <div>
+                                    <div className='border border-white my-2'></div>
+                                    <p className='text-2xl text-zinc-400 font-bold'>Claim Retrieval Successful</p>
+                                    <br></br>
+                                    <p className='text-md py-2 font-semibold'>Claim description</p>
+                                    <p className='text-sm font-light'>{receivedClaim}</p>
+                                    <p className='text-md py-2 font-semibold'>Amount to beneficiary</p>
+                                    <p className='text-sm font-light'>{receivedQty}</p>
+                                </div> : null}
+
                             <button
-                                className="px-5 py-2.5 mt-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                                className="px-5 py-2.5 mx-2 mt-8 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
                                 type="submit" onClick={() => this.connect()}>
 
                                 Connect Wallet
                             </button>
                             &nbsp;
                             <button
-                                className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                                className="px-5 py-2.5 mx-2 mt-8 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
                                 type="submit" onClick={() => this.readClaim()}>
 
-                                View Your Claim
+                                Retrieve Your Claim
                             </button>
                             &nbsp;
                             <button
-                                className="px-5 py-2.5 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow"
+                                className="px-5 py-2.5 mx-2 mt-8 text-lg font-medium text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow"
                                 type="submit" onClick={() => this.check()}>
 
-                                Verify Particular Claim
+                                Verify a Claim
                             </button>
                             &nbsp;
                             {SHOW_WITHDRAW ? <button

@@ -536,7 +536,7 @@ class Writer extends Component {
                         </button>
 
                         {!!rootHash ? <>
-                            <span style={{ color: "red" }}>Success</span>
+                            <span className='text-xl text-white font-extrabold'>WILL ENSCRIBED</span>
                             <br />
                             {rootHash}
                         </> : null}

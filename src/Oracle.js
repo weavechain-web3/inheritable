@@ -129,17 +129,17 @@ class Oracle extends Component {
                     </div>
 
                     <div class="transition border border-white p-6 my-6">
-                        <label className="mx-auto text-center pb-2 text-2xl font-extrabold text-gray-300">Oracle Count:</label> <span className="mx-auto text-center pb-2 text-2xl font-extrabold text-yellow-600"> {this.state.signed}/{this.state.oraclesCount}</span>
+                        <label className="mx-auto text-center pb-2 text-xl font-bold text-zinc-500">Witnesses Signed:</label> <span className="mx-auto text-center pb-2 text-xl font-bold text-white"> {this.state.signed} of {this.state.oraclesCount} required</span>
                         <br />
                         <br />
                         <br />
-                        <label className="mx-auto text-center pb-2 text-2xl font-extrabold text-gray-300">Will Unlocked:</label> <span className="mx-auto text-center pb-2 text-2xl font-extrabold text-yellow-600">{this.state.unlocked ? "Yes" : "No"}</span>
+                        <label className="mx-auto text-center pb-2 text-xl font-bold text-zinc-500">Will Unlocked:</label> <span className="mx-auto text-center pb-2 text-xl font-bold text-white">{this.state.unlocked ? "Yes" : "No"}</span>
                         <br />
                         <br />
                         <br />
                         <button className="px-5 py-2.5 mt-2 text-lg font-semibold text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow mx-2" type="submit" onClick={() => this.connect()}>Connect Wallet</button>
                         &nbsp;
-                        <button className="px-5 py-2.5 mt-2 text-lg font-semibold text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow mx-2" type="submit" onClick={() => this.vote()}>It's Time ...</button>
+                        <button className="px-5 py-2.5 mt-2 text-lg font-semibold text-slate-900 bg-white hover:bg-zinc-200 rounded-md shadow mx-2" type="submit" onClick={() => this.vote()}>Bear witness to death</button>
                     </div>
                 </div>
             </div>
