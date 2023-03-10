@@ -2,6 +2,7 @@ import React, { Component, useEffect } from 'react';
 import './App.css';
 import Web3 from 'web3'
 import { keccak512 } from 'js-sha3'
+import { base58_to_binary, binary_to_base58 } from "base58-js";
 
 import Inheritance_abi from "./Inheritance_abi.json";
 import WeaveHash_abi from "./WeaveHash_abi.json";
@@ -10,10 +11,12 @@ import CoinbaseWalletSDK from '@coinbase/wallet-sdk'
 import {coinbaseWallet} from "./Writer";
 const Buffer = require("buffer").Buffer
 
+const useSolana = true;
+
 const gasPrice = 1000; //saving tokens. It seems any gas price will work (for now) as the netowrk is not used
 
 const CHAIN_ID = "0x14A33"; //base testnet
-const CONTRACT_ADDRESS = "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
+const CONTRACT_ADDRESS = useSolana ? "TODO" : "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
 
 const CHAIN = {
     chainId: CHAIN_ID,
@@ -29,7 +32,7 @@ const CHAIN = {
 
 const CHAIN_URL = "https://goerli.base.org";
 
-const ethereum = coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
+const ethereum = useSolana ? null : coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
 window.ethereum = ethereum;
 
 
@@ -38,7 +41,7 @@ class Oracle extends Component {
         super(props);
 
         this.state = {
-            currentMetamaskAccount: null,
+            currentWallet: null,
             signed: 0,
             oraclesCount: 0,
             unlocked: false,
@@ -47,9 +50,11 @@ class Oracle extends Component {
     }
 
     componentDidMount() {
-        this.loadWeb3().then(async () => {
-            this.status();
-        });
+        if (!useSolana) {
+            this.loadWeb3().then(async () => {
+                this.status();
+            });
+        }
     }
 
     async loadWeb3() {
@@ -60,8 +65,13 @@ class Oracle extends Component {
     }
 
     async getCurrentWallet() {
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        return Web3.utils.toChecksumAddress(accounts[0].trim());
+        if (useSolana) {
+            const response = await window.solana.connect();
+            return response.publicKey.toString();
+        } else {
+            const accounts = await ethereum.request({method: 'eth_requestAccounts'});
+            return Web3.utils.toChecksumAddress(accounts[0].trim());
+        }
     }
 
     async status() {
@@ -84,7 +94,7 @@ class Oracle extends Component {
     }
 
     async connect() {
-        this.setState({ currentMetamaskAccount: await this.getCurrentWallet() });
+        this.setState({ currentWallet: await this.getCurrentWallet() });
 
         const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS);
         console.log(await contract.methods.Oracles(0).call())
@@ -95,14 +105,15 @@ class Oracle extends Component {
     async vote() {
         const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS);
 
-        const account = this.state.currentMetamaskAccount;
+        const account = this.state.currentWallet;
         let msg = "I confirm that it's time" +
             "\n\nWallet: " + account;
 
-        const signature = await ethereum.request({
-            method: 'personal_sign',
-            params: [msg, account]
-        });
+        const signature = useSolana ? binary_to_base58(await window.solana.signMessage(new TextEncoder().encode(msg), 'utf8').signature)
+            : await ethereum.request({
+                method: 'personal_sign',
+                params: [msg, account]
+            });
 
         const vote = await contract.methods.vote(signature).send({ chainId: CHAIN_ID, from: account, gasPrice: gasPrice });
         console.log(vote)
@@ -124,7 +135,7 @@ class Oracle extends Component {
 
                     <div className="flex justify-between">
                         <p className="text-zinc-500 font-bold text-left">Connected Address: </p>
-                        <span className="text-zinc-300">{this.state.currentMetamaskAccount}</span>
+                        <span className="text-zinc-300">{this.state.currentWallet}</span>
                     </div>
 
                     <div class="transition border border-white p-6 my-6">

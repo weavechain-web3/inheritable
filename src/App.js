@@ -4,7 +4,7 @@ import Reader from './Reader';
 import Oracle from './Oracle';
 import logo from './logo.svg';
 import logo2 from './logo2.svg';
-import base from './base.svg'
+import solana from './solana.svg'
 import inherilogo from './resources/inheri-logo.svg';
 import verifySvg from "./resources/verify.svg";
 import signSvg from "./resources/ri_quill-pen-fill.svg";
@@ -152,14 +152,14 @@ class App extends Component {
 
                     <div className='flex flex-col items-center text-zinc-300 border-2 rounded p-1 m-2'>
                     <div className='justify-center flex-nowrap flex items-center'>
-                        <a className='font-sm pb-2 text-md'>Smart Contracts deployed on</a> <img src={base} className="h-8 mb-2 w-12 ml-2" onClick={() => this.switchView()} alt="logo" />
+                        <a className='font-sm pb-2 text-md'>Smart Contracts deployed on</a> <img src={solana} className="h-8 mb-2 w-12 ml-2" onClick={() => this.switchView()} alt="logo" />
                         </div>
-                        <a href={"https://goerli.basescan.org/address/0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Writing Hashes of the Will</a>
-                        <a href={"https://goerli.basescan.org/address/0xc2CA9937fCbd04e214965fFfD3526045aba337CC"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Oracle Signing</a>
+                        <a target="_blank" href={"https://explorer.solana.com/address/3uCfjcPxnvWyNRSpBQKcDwpBmuAaXraPw8v7SzKicfmq?cluster=testnet"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Writing Hashes of the Will</a>
+                        <a target="_blank" href={"https://explorer.solana.com/address/TODO?cluster=testnet"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Oracle Signing</a>
                     </div>
                     <div className='flex flex-nowrap items-center m-1'>
                         <span className='text-white font-light text-m'>Anchored on</span>
-                        <img src={base} className="h-15 w-24 ml-2" onClick={() => this.switchView()} alt="logo" />
+                        <img src={solana} className="h-15 w-24 ml-2" onClick={() => this.switchView()} alt="logo" />
                     </div>
 
                     <div className='flex flex-nowrap items-center pb-6'>
