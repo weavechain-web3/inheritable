@@ -1,3 +1,11 @@
+## Quickstart
+
+```
+npm install
+npm run start
+```
+
+
 ## Description
 
 Inheritable is a Web3 Will solution for secure, decentralized inheritance that’s Anchored on Solana and powered by Weavechain.
