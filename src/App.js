@@ -155,7 +155,7 @@ class App extends Component {
                         <a className='font-sm pb-2 text-md'>Smart Contracts deployed on</a> <img src={solana} className="h-8 mb-2 w-12 ml-2" onClick={() => this.switchView()} alt="logo" />
                         </div>
                         <a target="_blank" href={"https://explorer.solana.com/address/3uCfjcPxnvWyNRSpBQKcDwpBmuAaXraPw8v7SzKicfmq?cluster=testnet"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Writing Hashes of the Will</a>
-                        <a target="_blank" href={"https://explorer.solana.com/address/TODO?cluster=testnet"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Oracle Signing</a>
+                        <a target="_blank" href={"https://explorer.solana.com/address/G9nmhaToGZr2ih7X24Zo72w6fYLAEYU9EMjSo5M5D3vf?cluster=testnet"} className="text-xs font-light underline hover:text-indigo-300 hover:ease-in-out hover:transition hover:duration-700">Oracle Signing</a>
                     </div>
                     <div className='flex flex-nowrap items-center m-1'>
                         <span className='text-white font-light text-m'>Anchored on</span>

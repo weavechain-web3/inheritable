@@ -11,6 +11,7 @@ import { base58_to_binary, binary_to_base58 } from "base58-js";
 import Inheritance_abi from "./Inheritance_abi.json";
 import FiatTokenV1_abi from "./FiatTokenV1_abi.json";
 import SidebarWrapper from './components/sidebar-wrapper';
+import {Buffer} from "buffer";
 
 export const coinbaseWallet = new CoinbaseWalletSDK({
     appName: "Inheritable",
@@ -19,8 +20,10 @@ export const coinbaseWallet = new CoinbaseWalletSDK({
 
 const useSolana = true;
 
-const sideChain = "https://public3.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
-//const sideChain = "http://localhost:17080/92f30f0b6be2732cb817c19839b0940c";
+const solanaWeb3 = useSolana ? require("@solana/web3.js") : null;
+
+//const sideChain = "https://public3.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
+const sideChain = "http://localhost:17080/92f30f0b6be2732cb817c19839b0940c";
 
 const authChain = useSolana ? "solana" : "base";
 
@@ -30,7 +33,8 @@ const organization = "weavedemo";
 const data_collection = "private";
 const table = "inheritance3";
 
-const CONTRACT_ADDRESS = useSolana ? "TODO" : "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
+const CONTRACT_ADDRESS = useSolana ? "G9nmhaToGZr2ih7X24Zo72w6fYLAEYU9EMjSo5M5D3vf" : "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
+const CONTRACT_STORAGE_ADDRESS = useSolana ? "J12GJcqn3WneSUS1FMqHNAoeRMWExuRpKLNXHrgSnfMk" : null;
 
 const CHAIN_ID = "0x14A33"; //base testnet
 const CHAIN_URL = "https://goerli.base.org";
@@ -43,6 +47,17 @@ const TOKEN_ADDRESS = "0xf26490E8bdFfa5EBE8625Bafa967560303D802E4";
 const DECIMALS = 6;
 
 const STORE_AMOUNTS = false;
+
+class Vote {
+    source = null;
+    signature = null;
+
+    constructor({ source, signature }) {
+        this.source = source;
+        this.signature = signature;
+    }
+}
+
 
 class Writer extends Component {
     constructor(props) {
@@ -61,8 +76,13 @@ class Writer extends Component {
             publicKey = keys[0];
             privateKey = keys[1];
         } else {
-            publicKey = "weave25MLCC8pqe1cMJGCjwEnNFpaKpHEt8ZGrjXqz3BjFveNL";
-            privateKey = "H7Z3mUpGg2k4ZeghK1hVBmQbveSnukhGxNjofs4mvu7v";
+            if (sideChain.includes("localhost")) {
+                publicKey = "weavepAxQmrPWHRDHuS9WLFjCVjE9vJ14nKQYt2V5e1qRWSCq";
+                privateKey = "HPY1SCQ7nHqSUYYyKEDiMfQyjs4TAqjg9uRKgbX7Xtk7";
+            } else {
+                publicKey = "weave25MLCC8pqe1cMJGCjwEnNFpaKpHEt8ZGrjXqz3BjFveNL";
+                privateKey = "H7Z3mUpGg2k4ZeghK1hVBmQbveSnukhGxNjofs4mvu7v";
+            }
         }
 
         this.state = {
@@ -73,12 +93,12 @@ class Writer extends Component {
             credentials: null,
             saved: false,
             wallet: null,
-            oracle_1: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
+            oracle_1: "7oATF4u22gFYsYKfgFV7AJZRztkNCtxx71ZCGTjZg9Le",
             oracle_2: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
             oracle_3: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
             claim_1: "John Doe, son, with last 4 SSN digits 1234, 1 House in Palm Beach",
             qty_1: 100,
-            wallet_1: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
+            wallet_1: "7oATF4u22gFYsYKfgFV7AJZRztkNCtxx71ZCGTjZg9Le",
             claim_2: "Jane Doe, daughter, with last 4 SSN digits 5678, Fiat USD",
             qty_2: 200,
             wallet_2: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
@@ -141,7 +161,7 @@ class Writer extends Component {
             "\n\nWallet: " + account +
             "\nKey: " + pub;
 
-        const sig = useSolana ? binary_to_base58(await window.solana.signMessage(new TextEncoder().encode(msg), 'utf8').signature)
+        const sig = useSolana ? binary_to_base58((await window.solana.signMessage(new TextEncoder().encode(msg), 'utf8')).signature)
             : await ethereum.request({
                 method: 'personal_sign',
                 params: [msg, account]
@@ -167,6 +187,7 @@ class Writer extends Component {
             claim_2, qty_2, wallet_2,
             claim_3, qty_3, wallet_3,
             claim_4, qty_4, wallet_4,
+            oracle_1, oracle_2, oracle_3
         } = this.state;
 
         //1. login. The login could be done only once if the nodeApi and session variables are kept in the component state
@@ -196,15 +217,79 @@ class Writer extends Component {
         console.log(account);
 
         if (useSolana) {
-            //TODO
+            function le(val) {
+                const res = new Uint8Array(4);
+                res[0] =  val & 0xFF;
+                res[1] = (val >> 8) & 0xFF;
+                res[2] = (val >> 16) & 0xFF;
+                res[3] = (val >> 24) & 0xFF;
+                return res;
+            }
+
+            const o1 = new TextEncoder().encode(oracle_1);
+            const o2 = new TextEncoder().encode(oracle_2);
+            const o3 = new TextEncoder().encode(oracle_3);
+            const count = 3;
+
+            var tdata = new Uint8Array(1 + 4 + 4 + o1.length + 4 + o2.length + 4 + o3.length);
+            tdata[0] = 2; //set oracles
+            tdata.set(le(count), 1);
+            tdata.set(le(o1.length), 1 + 4);
+            tdata.set(o1, 1 + 4 + 4);
+            tdata.set(le(o2.length), 1 + 4 + 4 + o1.length);
+            tdata.set(o2, 1 + 4 + 4 + o1.length + 4);
+            tdata.set(le(o3.length), 1 + 4 + 4 + o1.length + 4 + o2.length);
+            tdata.set(o3, 1 + 4 + 4 + o1.length + 4 + o2.length + 4);
+
+            console.log(tdata)
+            console.log(binary_to_base58(tdata));
+
+            let connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("testnet"), "confirmed");
+
+            const accountKey = new solanaWeb3.PublicKey(account);
+            const programAccount = new solanaWeb3.PublicKey(CONTRACT_ADDRESS);
+            const programStorageAccount = new solanaWeb3.PublicKey(CONTRACT_STORAGE_ADDRESS);
+
+            let transaction = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: programStorageAccount, isSigner: false, isWritable: true },
+                        { pubkey: accountKey, isSigner: true, isWritable: false }
+                    ],
+                    programId: programAccount,
+                    data: tdata,
+                })
+            );
+
+            transaction.feePayer = await window.solana.publicKey;
+
+            const blockhashResponse = await connection.getLatestBlockhashAndContext();
+            const lastValidBlockHeight = blockhashResponse.context.slot + 150;
+            let bheight = await connection.getBlockHeight();
+
+            if (bheight < lastValidBlockHeight) {
+                transaction.recentBlockhash = blockhashResponse.value.blockhash;
+                let signed = await window.solana.signTransaction(transaction);
+                //console.log(signed)
+                const rawTransaction = signed.serialize();
+                //console.log(rawTransaction)
+
+                const res = await connection.sendRawTransaction(rawTransaction, {
+                    skipPreflight: true,
+                });
+                console.log("Transaction Hash", res)
+
+                //retry
+                //bheight = await connection.getBlockHeight();
+            }
         } else {
             const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS, {from: account});
             const feeToken = await new window.web3.eth.Contract(FiatTokenV1_abi, TOKEN_ADDRESS, {from: account});
 
             const res = await contract.methods.setOracles([
-                this.state.oracle_1,
-                this.state.oracle_2,
-                this.state.oracle_3
+                oracle_1,
+                oracle_2,
+                oracle_3
             ]).send({chainId: CHAIN_ID, gasPrice: gasPrice});
             console.log(res)
             console.log(await contract.methods.Oracles(0).call())
@@ -246,7 +331,7 @@ class Writer extends Component {
                 null, // timestamp
                 null, // writer
                 null, // signature of writer
-                "writer," + authChain + ":" + wallet_1 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
+                "writer," + authChain + ":" + wallet_1 + "&fn:" + authChain + ":" + CONTRACT_STORAGE_ADDRESS + ":0",
                 claim_1,
                 qty_1
             ],
@@ -255,7 +340,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_2 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
+                "writer," + authChain + ":" + wallet_2 + "&fn:" + authChain + ":" + CONTRACT_STORAGE_ADDRESS + ":0",
                 claim_2,
                 qty_2
             ],
@@ -264,7 +349,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_3 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
+                "writer," + authChain + ":" + wallet_3 + "&fn:" + authChain + ":" + CONTRACT_STORAGE_ADDRESS + ":0",
                 claim_3,
                 qty_3
             ],
@@ -273,7 +358,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_4 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
+                "writer," + authChain + ":" + wallet_4 + "&fn:" + authChain + ":" + CONTRACT_STORAGE_ADDRESS + ":0",
                 claim_4,
                 qty_4
             ]
