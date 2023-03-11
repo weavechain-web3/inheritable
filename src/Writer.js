@@ -22,8 +22,8 @@ const useSolana = true;
 
 const solanaWeb3 = useSolana ? require("@solana/web3.js") : null;
 
-//const sideChain = "https://public3.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
-const sideChain = "http://localhost:17080/92f30f0b6be2732cb817c19839b0940c";
+const sideChain = "https://public3.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
+// const sideChain = "http://localhost:17080/92f30f0b6be2732cb817c19839b0940c";
 
 const authChain = useSolana ? "solana" : "base";
 
