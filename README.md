@@ -1,5 +1,7 @@
 ## Quickstart
 
+Use node version 19
+
 ```
 npm install
 npm run start
