@@ -4,7 +4,7 @@
 npm install
 npm run start
 ```
-
+Note: use node version 19
 
 ## Description
 

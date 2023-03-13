@@ -186,6 +186,8 @@ pub fn process_instruction(
     let instr = rdr.read_u8().unwrap();
 
     if instr == 0 {
+        // reset the program
+
         {
             account.realloc(ACCOUNT_STATE_SPACE, true)?;
         }
@@ -195,6 +197,9 @@ pub fn process_instruction(
         }
         Ok(())
     } else if instr == 1 {
+        // Oracle vote for death. If the new vote count is geq 2/3, set
+        // account to be unlocked
+
         let mut account_data = account.data.borrow_mut();
         //msg!(type_of(&account_data));
         let mut acc = AccountData::unpack_from_slice(&account_data)?;
@@ -234,12 +239,23 @@ pub fn process_instruction(
 
         if vunique.len() >= leno * 2 / 3 {
             acc.set_unlocked(1);
+
+            // Transfer the SOL from the program account to the user account
+            // **sol_account.lamports.borrow_mut() += data.balance;
+            // **data_account.lamports.borrow_mut() -= data.balance;
+            // data.balance = 0;
+            // PiggyBank::pack(data, &mut data_account.data.borrow_mut())?;
+            //
+            // msg!("Withdrew {} SOL from the escrow", data.balance);
         }
 
         AccountData::pack_into_slice(&acc, &mut account_data);
 
         Ok(())
     } else if instr == 2 {
+        // add oracle to the list
+
+        // Verify the Program ID
         if account.owner != program_id {
             msg!("Not owner");
             return Err(ProgramError::IncorrectProgramId);
@@ -249,7 +265,7 @@ pub fn process_instruction(
         //msg!(type_of(&account_data));
         let mut acc = AccountData::unpack_from_slice(&account_data)?;
 
-        let leno = rdr.read_u32::<LittleEndian>().unwrap();
+        let leno = rdr.read_u32::<LittleEndian>().unwrap(); // oracle length
         let mut oracles = Vec::with_capacity(leno as usize);
 
         for _i in 0..leno {
@@ -267,7 +283,26 @@ pub fn process_instruction(
         AccountData::pack_into_slice(&acc, &mut account_data);
 
         Ok(())
-    } else {
+    }
+    // else if instr == 3 {
+    //     // fund account
+    //
+    //     // Parse the amount of SOL to deposit
+    //     let amount = u64::from_le_bytes(
+    //         amount_bytes
+    //             .try_into()
+    //             .or(Err(ProgramError::InvalidInstructionData))?,
+    //     );
+    //
+    //     // Transfer the SOL from the user account to the program account
+    //     **sol_account.lamports.borrow_mut() -= amount;
+    //     **data_account.lamports.borrow_mut() += amount;
+    //     data.balance += amount;
+    //     PiggyBank::pack(data, &mut data_account.data.borrow_mut())?;
+    //
+    //     msg!("Deposited {} SOL to the escrow", amount);
+    // }
+    else {
         msg!("Invalid instruction");
         Err(ProgramError::InvalidInstructionData)
     }
