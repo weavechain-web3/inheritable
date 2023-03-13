@@ -10,6 +10,8 @@ import verifySvg from "./resources/verify.svg";
 import signSvg from "./resources/ri_quill-pen-fill.svg";
 import witnessSvg from "./resources/witness.svg";
 
+import { NavBar } from './navBar';
+
 
 
 import './App.css';
@@ -135,7 +137,9 @@ class App extends Component {
 
 
     render() {
-        return <div className="font-serif bg-zinc-900 ">
+        return (
+        <div className="font-serif bg-zinc-900 ">
+         <NavBar />
             <div className="fixed w-1/4 h-full flex flex-col justify-between">
                 <div className='max-h-2/5'>
                     <div className='flex justify-center '>
@@ -184,7 +188,8 @@ class App extends Component {
                 </div>
             </div>
 
-        </div >;
+        </div>
+        )
     }
 }
 
