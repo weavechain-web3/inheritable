@@ -17,7 +17,6 @@ async function main() {
 
   //await reset();
 
-  //TODO: uncomment if not using the UI
   //await setOracles();
 
   //await vote();

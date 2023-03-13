@@ -2,10 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
+// @ts-ignore
 import os from 'os';
 import fs from 'mz/fs';
-import path from 'path';
-import yaml from 'yaml';
+import * as path from 'path';
+import * as yaml from 'yaml';
 import {Keypair} from '@solana/web3.js';
 
 /**

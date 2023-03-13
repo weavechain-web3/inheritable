@@ -12,7 +12,7 @@
     "lint:fix": "eslint --ext .ts src/client/* --fix && prettier --write \"src/client/**/*.ts\"",
     "clean": "npm run clean:program",
     "build:program": "cargo build-bpf --manifest-path=./src/program/Cargo.toml --bpf-out-dir=dist/program",
-    "clean:program": "cargo clean --manifest-path=./src/program/Cargo.toml && rm -rf ./dist",
+    "clean:program": "cargo clean --manifest-path=./src/program/Cargo.toml && rm -rf src/dist",
     "test:program": "cargo test-bpf --manifest-path=./src/program/Cargo.toml",
     "pretty": "prettier --write '{,src/**/}*.ts'"
   },

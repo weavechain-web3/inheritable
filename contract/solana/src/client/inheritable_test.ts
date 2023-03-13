@@ -12,7 +12,7 @@ import {
   sendAndConfirmTransaction,
 } from '@solana/web3.js';
 import fs from 'mz/fs';
-import path from 'path';
+import * as path from 'path';
 import * as borsh from 'borsh';
 
 import {getPayer, getRpcUrl, createKeypairFromFile} from './utils';
@@ -129,7 +129,7 @@ export async function checkProgram(): Promise<void> {
 
   // Derive the address (public key) of a greeting account from the program so that it's easy to find later.
   const SEED = '1234';
-  storagePubKey = await PublicKey.createWithSeed(
+  storagePubKey = await PublicKey.createWithSeed( // data account with seed 1234
     payer.publicKey,
     SEED,
     programId,
