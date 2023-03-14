@@ -14,20 +14,25 @@ import {coinbaseWallet} from "./Writer";
 
 const Buffer = require("buffer").Buffer
 
-const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
+const useSolana = true;
 
-const authChain = "base";
+const solanaWeb3 = useSolana ? require("@solana/web3.js") : null;
+
+const sideChain = "https://public3.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
+// const sideChain = "http://localhost:17080/92f30f0b6be2732cb817c19839b0940c";
+
+const authChain = useSolana ? "solana" : "base";
 
 const organization = "weavedemo";
 const data_collection = "private";
-const table = "inheritance2";
+const table = "inheritance3";
 
 const digest = "Keccak-512";
 
 const gasPrice = 1000; //saving tokens. It seems any gas price will work (for now) as the netowrk is not used
 
 const CHAIN_ID = "0x14A33"; //base testnet
-const HASH_CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
+const HASH_CONTRACT_ADDRESS = useSolana ? "3uCfjcPxnvWyNRSpBQKcDwpBmuAaXraPw8v7SzKicfmq" : "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
 //const CHAIN_ID = "0x1A4"; //optimism testnet
 //const HASH_CONTRACT_ADDRESS = "0xB46459Cf87f1D6dDcf8AABDd5642cf27a39CeC68";
 //const CHAIN_ID = "0x13881"; //polygon testnet
@@ -51,7 +56,7 @@ const CHAIN = {
 
 const CHAIN_URL = "https://goerli.base.org";
 
-const ethereum = coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
+const ethereum = useSolana ? null : coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
 window.ethereum = ethereum;
 
 
@@ -77,7 +82,7 @@ class Reader extends Component {
         }
 
         this.state = {
-            currentMetamaskAccount: null,
+            currentWallet: null,
             publicKey: publicKey,
             privateKey: privateKey,
             credentials: null,
@@ -95,8 +100,10 @@ class Reader extends Component {
 
         this.mermaidRef = React.createRef();
 
-        this.loadWeb3().then(async () => {
-        });
+        if (!useSolana) {
+            this.loadWeb3().then(async () => {
+            });
+        }
     }
 
     async loadWeb3() {
@@ -107,14 +114,19 @@ class Reader extends Component {
     }
 
     async getCurrentWallet() {
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        return Web3.utils.toChecksumAddress(accounts[0].trim());
+        if (useSolana) {
+            const response = await window.solana.connect();
+            return response.publicKey.toString();
+        } else {
+            const accounts = await ethereum.request({method: 'eth_requestAccounts'});
+            return Web3.utils.toChecksumAddress(accounts[0].trim());
+        }
     }
 
     async connect() {
         const account = await this.getCurrentWallet();
 
-        this.setState({ currentMetamaskAccount: account });
+        this.setState({ currentWallet: account });
 
         //a new key is generated every time, so there is no key management needed for the consumer (which does not need to know about weavechain)
         // rights will be inherited based on the wallet ownership proof and NFT ownership (could also be payments on chain)
@@ -128,10 +140,11 @@ class Reader extends Component {
             "\nKey: " + pub;
 
         console.log(account)
-        const sig = await ethereum.request({
-            method: 'personal_sign',
-            params: [msg, account]
-        });
+        const sig = useSolana ? binary_to_base58((await window.solana.signMessage(new TextEncoder().encode(msg), 'utf8')).signature)
+            : await ethereum.request({
+                method: 'personal_sign',
+                params: [msg, account]
+            });
 
         const credentials = {
             "account": authChain + ":" + account,
@@ -238,49 +251,73 @@ class Reader extends Component {
                 const signature = resMerkle.data.signature;
                 const tree = resMerkle.data.tree;
 
+                let chainRootHash = null;
+                let metadata = null;
+                let chainTs = null;
+                let chainRootHashSignature = null;
+
                 //3. get merkle root from smart contract
-                try {
-                    await ethereum.request({
-                        method: "wallet_switchEthereumChain",
-                        params: [{ chainId: CHAIN_ID }],
-                    });
-                } catch (switchError) {
+                if (useSolana) {
+                    //3. get merkle root from solana contract
+                    let connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("testnet"), "confirmed");
+                    const programAccount = new solanaWeb3.PublicKey(HASH_CONTRACT_ADDRESS);
+                    const accountInfo = await connection.getAccountInfo(programAccount, "confirmed");
+                    const data = accountInfo.data;
+                    //console.log(data)
+
+                    const hlenarr = data.slice(0, 4); //int little endian
+                    const hlen = hlenarr[0] + (hlenarr[1] << 8) + (hlenarr[2] << 16) + (hlenarr[3] << 24);
+                    chainRootHash = new TextDecoder().decode(data.slice(4, 4 + hlen));
+                    //console.log(chainRootHash)
+                    const mlenarr = data.slice(4 + hlen, 8 + hlen); //int little endian
+                    const mlen = mlenarr[0] + (mlenarr[1] << 8) + (mlenarr[2] << 16) + (mlenarr[3] << 24);
+                    const mdata = new TextDecoder().decode(data.slice(8 + hlen, data.length));
+                    //console.log(mdata);
+                    metadata = JSON.parse(mdata);
+                    chainTs = metadata.ts;
+                    chainRootHashSignature = metadata.signature;
+
+                } else {
                     try {
                         await ethereum.request({
-                            method: "wallet_addEthereumChain",
-                            params: [CHAIN],
+                            method: "wallet_switchEthereumChain",
+                            params: [{chainId: CHAIN_ID}],
                         });
-                    } catch (error) {
-                        console.debug(error);
+                    } catch (switchError) {
+                        try {
+                            await ethereum.request({
+                                method: "wallet_addEthereumChain",
+                                params: [CHAIN],
+                            });
+                        } catch (error) {
+                            console.debug(error);
+                        }
                     }
+
+                    const res = await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{chainId: CHAIN_ID}],
+                    })
+
+                    //console.log(await window.web3.eth.net.getId())
+                    //console.log(await window.web3.eth.getChainId())
+
+                    const account = await this.getCurrentWallet();
+                    console.log(account)
+
+                    const contract = await new window.web3.eth.Contract(WeaveHash_abi, HASH_CONTRACT_ADDRESS, {from: account});
+                    //console.log(contract.methods)
+                    const fn = contract.methods.readHashes();
+                    const items = await fn.call({chainId: CHAIN_ID});
+                    //console.log(items)
+
+                    chainRootHash = items[2];
+                    metadata = JSON.parse(items[3]);
+                    chainTs = metadata.ts;
+                    chainRootHashSignature = metadata.signature;
                 }
 
-                const res = await window.ethereum.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: CHAIN_ID }],
-                })
-
-                //console.log(await window.web3.eth.net.getId())
-                //console.log(await window.web3.eth.getChainId())
-
-                let accounts = await window.ethereum.request({
-                    method: "eth_requestAccounts",
-                });
-                const account = Web3.utils.toChecksumAddress(accounts[0]);
-                console.log(account)
-
-                const contract = await new window.web3.eth.Contract(WeaveHash_abi, HASH_CONTRACT_ADDRESS, { from: account });
-                //console.log(contract.methods)
-                const fn = contract.methods.readHashes();
-                const items = await fn.call({ chainId: CHAIN_ID });
-                //console.log(items)
-
                 //4. check merkle root on chain matches merkle root received from node
-                const chainRootHash = items[2];
-                const metadata = JSON.parse(items[3]);
-                const chainTs = metadata.ts;
-                const chainRootHashSignature = metadata.signature;
-
                 success = chainRootHash == rootHash;
                 if (!success) {
                     this.setState({
@@ -412,7 +449,7 @@ class Reader extends Component {
                     <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm">
                         <div className="flex justify-between">
                             <p className="text-zinc-500 font-bold text-left">Connected Address: </p>
-                            <span className="text-zinc-300">{this.state.currentMetamaskAccount}</span>
+                            <span className="text-zinc-300">{this.state.currentWallet}</span>
                         </div>
                         <div className='flex justify-between'>
                             <span className="text-zinc-500 font-bold text-left">Weavechain public key: </span>

@@ -6,32 +6,40 @@ import WeaveHelper from "./weaveapi/helper";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import Claim from './components/claim';
 import Form from './components/form';
+import { base58_to_binary, binary_to_base58 } from "base58-js";
 
 import Inheritance_abi from "./Inheritance_abi.json";
 import FiatTokenV1_abi from "./FiatTokenV1_abi.json";
 import SidebarWrapper from './components/sidebar-wrapper';
+import {Buffer} from "buffer";
 
 export const coinbaseWallet = new CoinbaseWalletSDK({
     appName: "Inheritable",
     darkMode: true
 })
 
-const sideChain = "https://public2.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
-//const sideChain = "http://localhost:18080/92f30f0b6be2732cb817c19839b0940c";
+const useSolana = true;
 
-const authChain = "base";
+const solanaWeb3 = useSolana ? require("@solana/web3.js") : null;
+
+const sideChain = "https://public3.weavechain.com:443/92f30f0b6be2732cb817c19839b0940c";
+// const sideChain = "http://localhost:17080/92f30f0b6be2732cb817c19839b0940c";
+
+const authChain = useSolana ? "solana" : "base";
 
 const gasPrice = 1000; //saving tokens. It seems any gas price will work (for now) as the netowrk is not used
 
 const organization = "weavedemo";
 const data_collection = "private";
-const table = "inheritance2";
+const table = "inheritance3";
+
+const CONTRACT_ADDRESS = useSolana ? "G9nmhaToGZr2ih7X24Zo72w6fYLAEYU9EMjSo5M5D3vf" : "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
+const CONTRACT_STORAGE_ADDRESS = useSolana ? "J12GJcqn3WneSUS1FMqHNAoeRMWExuRpKLNXHrgSnfMk" : null;
 
 const CHAIN_ID = "0x14A33"; //base testnet
-const CONTRACT_ADDRESS = "0xc2CA9937fCbd04e214965fFfD3526045aba337CC";
 const CHAIN_URL = "https://goerli.base.org";
 
-const ethereum = coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
+const ethereum = useSolana ? null : coinbaseWallet.makeWeb3Provider(CHAIN_URL, CHAIN_ID);
 window.ethereum = ethereum;
 
 const TOKEN_ADDRESS = "0xf26490E8bdFfa5EBE8625Bafa967560303D802E4";
@@ -39,6 +47,17 @@ const TOKEN_ADDRESS = "0xf26490E8bdFfa5EBE8625Bafa967560303D802E4";
 const DECIMALS = 6;
 
 const STORE_AMOUNTS = false;
+
+class Vote {
+    source = null;
+    signature = null;
+
+    constructor({ source, signature }) {
+        this.source = source;
+        this.signature = signature;
+    }
+}
+
 
 class Writer extends Component {
     constructor(props) {
@@ -57,37 +76,44 @@ class Writer extends Component {
             publicKey = keys[0];
             privateKey = keys[1];
         } else {
-            publicKey = "weave283zqhDkng9jjQvTrWhmodR8R32QR1WV1w65jysGyefDC";
-            privateKey = "FnJJikMtRXC3LvLi7hpGn5srPRmrecHNz5mWbzgpkxJb";
+            if (sideChain.includes("localhost")) {
+                publicKey = "weavepAxQmrPWHRDHuS9WLFjCVjE9vJ14nKQYt2V5e1qRWSCq";
+                privateKey = "HPY1SCQ7nHqSUYYyKEDiMfQyjs4TAqjg9uRKgbX7Xtk7";
+            } else {
+                publicKey = "weave25MLCC8pqe1cMJGCjwEnNFpaKpHEt8ZGrjXqz3BjFveNL";
+                privateKey = "H7Z3mUpGg2k4ZeghK1hVBmQbveSnukhGxNjofs4mvu7v";
+            }
         }
 
         this.state = {
-            currentMetamaskAccount: null,
+            currentWallet: null,
             publicKey: publicKey,
             privateKey: privateKey,
             producerIndex: 0,
             credentials: null,
             saved: false,
             wallet: null,
-            oracle_1: "0x4AC8f386A76fD64B572619019314715Ad1C2de70",
-            oracle_2: "0x72F97C6108378656a99Fcd4eD58d944E91d74a1b",
-            oracle_3: "0xAd55981118506cEFB74086f11C76d1680A5bda3F",
+            oracle_1: "7oATF4u22gFYsYKfgFV7AJZRztkNCtxx71ZCGTjZg9Le",
+            oracle_2: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
+            oracle_3: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
             claim_1: "John Doe, son, with last 4 SSN digits 1234, 1 House in Palm Beach",
             qty_1: 100,
-            wallet_1: "0x4AC8f386A76fD64B572619019314715Ad1C2de70",
+            wallet_1: "7oATF4u22gFYsYKfgFV7AJZRztkNCtxx71ZCGTjZg9Le",
             claim_2: "Jane Doe, daughter, with last 4 SSN digits 5678, Fiat USD",
             qty_2: 200,
-            wallet_2: "0x72F97C6108378656a99Fcd4eD58d944E91d74a1b",
+            wallet_2: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
             claim_3: "George Doe, nephew, with last 4 SSN digits 4567, Fiat USD",
             qty_3: 300,
-            wallet_3: "0xAd55981118506cEFB74086f11C76d1680A5bda3F",
+            wallet_3: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
             claim_4: "Mary Doe, niece, with last 4 SSN digits 7654, Fiat USD",
             qty_4: 400,
-            wallet_4: "0x6575be9b0D1C8c9c611078aCd6f0cED2586053ef",
+            wallet_4: "2hvcL316EUKLCdodjifN2rYCY683tTCZkZCKKew9MsRv",
         };
 
-        this.loadWeb3().then(async () => {
-        });
+        if (!useSolana) {
+            this.loadWeb3().then(async () => {
+            });
+        }
     }
 
     async loadWeb3() {
@@ -98,8 +124,13 @@ class Writer extends Component {
     }
 
     async getCurrentWallet() {
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        return accounts[0];
+        if (useSolana) {
+            const response = await window.solana.connect();
+            return response.publicKey.toString();
+        } else {
+            const accounts = await ethereum.request({method: 'eth_requestAccounts'});
+            return Web3.utils.toChecksumAddress(accounts[0].trim());
+        }
     }
 
     async login() {
@@ -123,17 +154,18 @@ class Writer extends Component {
         const pvk = this.state.privateKey;
 
         const account = await this.getCurrentWallet();
-        this.setState({ currentMetamaskAccount: account });
+        this.setState({ currentWallet: account });
 
         //This message must match what's hashed on server side, changing it here should trigger changing it also in the node
         let msg = "Please sign this message to confirm you own this wallet\nThere will be no blockchain transaction or any gas fees." +
             "\n\nWallet: " + account +
             "\nKey: " + pub;
 
-        const sig = await ethereum.request({
-            method: 'personal_sign',
-            params: [msg, account]
-        });
+        const sig = useSolana ? binary_to_base58((await window.solana.signMessage(new TextEncoder().encode(msg), 'utf8')).signature)
+            : await ethereum.request({
+                method: 'personal_sign',
+                params: [msg, account]
+            });
 
         const credentials = {
             "account": authChain + ":" + account,
@@ -155,6 +187,7 @@ class Writer extends Component {
             claim_2, qty_2, wallet_2,
             claim_3, qty_3, wallet_3,
             claim_4, qty_4, wallet_4,
+            oracle_1, oracle_2, oracle_3
         } = this.state;
 
         //1. login. The login could be done only once if the nodeApi and session variables are kept in the component state
@@ -180,41 +213,109 @@ class Writer extends Component {
         };
 
 
-        let accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-        });
-        const account = Web3.utils.toChecksumAddress(accounts[0]);
-        console.log(account)
+        const account = await this.getCurrentWallet();
+        console.log(account);
 
-        const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS, { from: account });
-        const feeToken = await new window.web3.eth.Contract(FiatTokenV1_abi, TOKEN_ADDRESS, { from: account });
-
-        const res = await contract.methods.setOracles([
-            this.state.oracle_1,
-            this.state.oracle_2,
-            this.state.oracle_3
-        ]).send({ chainId: CHAIN_ID, gasPrice: gasPrice });
-        console.log(res)
-        console.log(await contract.methods.Oracles(0).call())
-
-        if (STORE_AMOUNTS) {
-            const wallets = [wallet_1, wallet_2, wallet_3, wallet_4];
-            const qty = [qty_1, qty_2, qty_3, qty_4];
-            const amounts = [];
-            let sum = 0;
-            for (let i = 0; i < amounts.length; i++) {
-                const amount = qty[i];
-                sum = sum + Math.max(0, amount)
-                amounts.push(amount * Math.pow(10, DECIMALS));
+        if (useSolana) {
+            function le(val) {
+                const res = new Uint8Array(4);
+                res[0] =  val & 0xFF;
+                res[1] = (val >> 8) & 0xFF;
+                res[2] = (val >> 16) & 0xFF;
+                res[3] = (val >> 24) & 0xFF;
+                return res;
             }
-            const approveRes = await feeToken.methods.approve(TOKEN_ADDRESS, sum).send({
-                from: account,
-                gasPrice: gasPrice
-            });
-            console.log(approveRes);
 
-            const lockRes = await contract.methods.lock(wallets, amounts).send({ chainId: CHAIN_ID, gasPrice: gasPrice });
-            console.log(lockRes)
+            const o1 = new TextEncoder().encode(oracle_1);
+            const o2 = new TextEncoder().encode(oracle_2);
+            const o3 = new TextEncoder().encode(oracle_3);
+            const count = 3;
+
+            var tdata = new Uint8Array(1 + 4 + 4 + o1.length + 4 + o2.length + 4 + o3.length);
+            tdata[0] = 2; //set oracles
+            tdata.set(le(count), 1);
+            tdata.set(le(o1.length), 1 + 4);
+            tdata.set(o1, 1 + 4 + 4);
+            tdata.set(le(o2.length), 1 + 4 + 4 + o1.length);
+            tdata.set(o2, 1 + 4 + 4 + o1.length + 4);
+            tdata.set(le(o3.length), 1 + 4 + 4 + o1.length + 4 + o2.length);
+            tdata.set(o3, 1 + 4 + 4 + o1.length + 4 + o2.length + 4);
+
+            console.log(tdata)
+            console.log(binary_to_base58(tdata));
+
+            let connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("testnet"), "confirmed");
+
+            const accountKey = new solanaWeb3.PublicKey(account);
+            const programAccount = new solanaWeb3.PublicKey(CONTRACT_ADDRESS);
+            const programStorageAccount = new solanaWeb3.PublicKey(CONTRACT_STORAGE_ADDRESS);
+
+            let transaction = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: programStorageAccount, isSigner: false, isWritable: true },
+                        { pubkey: accountKey, isSigner: true, isWritable: false }
+                    ],
+                    programId: programAccount,
+                    data: tdata,
+                })
+            );
+
+            transaction.feePayer = await window.solana.publicKey;
+
+            const blockhashResponse = await connection.getLatestBlockhashAndContext();
+            const lastValidBlockHeight = blockhashResponse.context.slot + 150;
+            let bheight = await connection.getBlockHeight();
+
+            if (bheight < lastValidBlockHeight) {
+                transaction.recentBlockhash = blockhashResponse.value.blockhash;
+                let signed = await window.solana.signTransaction(transaction);
+                //console.log(signed)
+                const rawTransaction = signed.serialize();
+                //console.log(rawTransaction)
+
+                const res = await connection.sendRawTransaction(rawTransaction, {
+                    skipPreflight: true,
+                });
+                console.log("Transaction Hash", res)
+
+                //retry
+                //bheight = await connection.getBlockHeight();
+            }
+        } else {
+            const contract = await new window.web3.eth.Contract(Inheritance_abi, CONTRACT_ADDRESS, {from: account});
+            const feeToken = await new window.web3.eth.Contract(FiatTokenV1_abi, TOKEN_ADDRESS, {from: account});
+
+            const res = await contract.methods.setOracles([
+                oracle_1,
+                oracle_2,
+                oracle_3
+            ]).send({chainId: CHAIN_ID, gasPrice: gasPrice});
+            console.log(res)
+            console.log(await contract.methods.Oracles(0).call())
+
+            if (STORE_AMOUNTS) {
+                const wallets = [wallet_1, wallet_2, wallet_3, wallet_4];
+                const qty = [qty_1, qty_2, qty_3, qty_4];
+                const amounts = [];
+                let sum = 0;
+                for (let i = 0; i < amounts.length; i++) {
+                    const amount = qty[i];
+                    sum = sum + Math.max(0, amount)
+                    amounts.push(amount * Math.pow(10, DECIMALS));
+                }
+                const approveRes = await feeToken.methods.approve(TOKEN_ADDRESS, sum).send({
+                    from: account,
+                    gasPrice: gasPrice
+                });
+                console.log(approveRes);
+
+                const lockRes = await contract.methods.lock(wallets, amounts).send({
+                    chainId: CHAIN_ID,
+                    gasPrice: gasPrice
+                });
+                console.log(lockRes)
+            }
         }
 
 
@@ -230,7 +331,7 @@ class Writer extends Component {
                 null, // timestamp
                 null, // writer
                 null, // signature of writer
-                "writer," + authChain + ":" + wallet_1 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
+                "writer," + authChain + ":" + wallet_1 + "&fn:" + authChain + ":" + CONTRACT_STORAGE_ADDRESS + ":0",
                 claim_1,
                 qty_1
             ],
@@ -239,7 +340,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_2 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
+                "writer," + authChain + ":" + wallet_2 + "&fn:" + authChain + ":" + CONTRACT_STORAGE_ADDRESS + ":0",
                 claim_2,
                 qty_2
             ],
@@ -248,7 +349,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_3 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
+                "writer," + authChain + ":" + wallet_3 + "&fn:" + authChain + ":" + CONTRACT_STORAGE_ADDRESS + ":0",
                 claim_3,
                 qty_3
             ],
@@ -257,7 +358,7 @@ class Writer extends Component {
                 null,
                 null,
                 null,
-                "writer," + authChain + ":" + wallet_4 + "&fn:" + authChain + ":" + CONTRACT_ADDRESS + ":Unlocked",
+                "writer," + authChain + ":" + wallet_4 + "&fn:" + authChain + ":" + CONTRACT_STORAGE_ADDRESS + ":0",
                 claim_4,
                 qty_4
             ]
@@ -302,7 +403,7 @@ class Writer extends Component {
                     <div class="max-w-2xl p-6 mx-auto text-center backdrop-sepia-0 backdrop-blur-sm">
                         <div className="flex justify-between">
                             <p className="text-zinc-500 font-bold text-left">Connected Address: </p>
-                            <span className="text-zinc-300">{this.state.currentMetamaskAccount}</span>
+                            <span className="text-zinc-300">{this.state.currentWallet}</span>
                         </div>
                         <div className='flex justify-between'>
                             <span className="text-zinc-500 font-bold text-left">Weavechain public key: </span>
