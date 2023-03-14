@@ -297,7 +297,7 @@ class Oracle extends Component {
                         <span className="text-zinc-300">{this.state.currentWallet}</span>
                     </div>
 
-                    <div class="transition border border-white p-6 my-6">
+                    <div class="transition border border-white p-6 my-6 ">
                         <label className="mx-auto text-center pb-2 text-xl font-bold text-zinc-500">Witnesses Signed:</label> <span className="mx-auto text-center pb-2 text-xl font-bold text-white"> {this.state.signed} of {this.state.oraclesCount} required</span>
                         <br />
                         <br />
