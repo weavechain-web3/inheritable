@@ -4,7 +4,7 @@ export function NavBar() {
   // Top Navigation Bar Element
   return (
 
-    <header className="bg-gray-700">
+    <header className="bg-gray-400">
       <div className="px-6 mx-auto max-w-screen-xl sm:px-6 lg:px-8 items-center">
 
         <div className="flex items-center justify-between h-16">
